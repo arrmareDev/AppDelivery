@@ -3,43 +3,42 @@
         <Transition enter-active-class="transition-opacity duration-200"
             leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0"
             leave-to-class="opacity-0">
-            <div v-if="modelValue" class="fixed inset-0 z-[300] bg-black/50 backdrop-blur-sm
-                     flex items-center justify-center p-4" @click.self="$emit('update:modelValue', false)">
-                <Transition enter-active-class="transition-all duration-200 ease-out"
-                    enter-from-class="opacity-0 scale-95" leave-to-class="opacity-0 scale-95">
-                    <div v-if="modelValue"
-                        class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-7 text-center">
+            <div v-if="modelValue" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm
+                       flex items-center justify-center p-4" @click.self="$emit('update:modelValue', false)">
 
-                        <div class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-                            :class="variantClasses.iconBg">
-                            <span class="text-2xl">{{ icon }}</span>
-                        </div>
+                <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6 sm:p-7 text-center
+                            transition-all duration-200 ease-out"
+                    :class="modelValue ? 'opacity-100 scale-100' : 'opacity-0 scale-95'">
 
-                        <h3 class="font-black text-[18px] sm:text-[19px] text-gray-900 m-0 mb-2">
-                            {{ title }}
-                        </h3>
-                        <p class="text-[13.5px] text-gray-400 m-0 mb-6 leading-relaxed">
-                            {{ message }}
-                        </p>
-
-                        <div class="flex gap-3">
-                            <button @click="$emit('update:modelValue', false)" :disabled="loading" class="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600
-                                       font-semibold text-[13.5px] cursor-pointer bg-white
-                                       hover:border-gray-300 transition-all duration-150
-                                       disabled:opacity-50">
-                                {{ cancelLabel }}
-                            </button>
-                            <button @click="$emit('confirm')" :disabled="loading" class="flex-1 py-3 rounded-2xl text-white font-bold text-[13.5px]
-                                       cursor-pointer border-none transition-all duration-150
-                                       disabled:opacity-50 flex items-center justify-center gap-2"
-                                :class="variantClasses.confirmBtn">
-                                <span v-if="loading" class="w-4 h-4 border-2 border-white/30 border-t-white
-                                           rounded-full animate-spin" />
-                                {{ loading ? loadingLabel : confirmLabel }}
-                            </button>
-                        </div>
+                    <div class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                        :class="variantClasses.iconBg">
+                        <span class="text-2xl">{{ icon }}</span>
                     </div>
-                </Transition>
+
+                    <h3 class="font-black text-[18px] sm:text-[19px] text-gray-900 m-0 mb-2">
+                        {{ title }}
+                    </h3>
+                    <p class="text-[13.5px] text-gray-400 m-0 mb-6 leading-relaxed">
+                        {{ message }}
+                    </p>
+
+                    <div class="flex gap-3">
+                        <button @click="$emit('update:modelValue', false)" :disabled="loading" class="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600
+                                   font-semibold text-[13.5px] cursor-pointer bg-white
+                                   hover:border-gray-300 transition-all duration-150
+                                   disabled:opacity-50">
+                            {{ cancelLabel }}
+                        </button>
+                        <button @click="$emit('confirm')" :disabled="loading" class="flex-1 py-3 rounded-2xl text-white font-bold text-[13.5px]
+                                   cursor-pointer border-none transition-all duration-150
+                                   disabled:opacity-50 flex items-center justify-center gap-2"
+                            :class="variantClasses.confirmBtn">
+                            <span v-if="loading"
+                                class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            {{ loading ? loadingLabel : confirmLabel }}
+                        </button>
+                    </div>
+                </div>
             </div>
         </Transition>
     </Teleport>

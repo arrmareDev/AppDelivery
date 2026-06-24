@@ -152,8 +152,10 @@
                             <p class="text-[10.5px] font-black text-gray-400 uppercase tracking-wider m-0">
                                 Ubicación exacta del cliente
                             </p>
+                            <!-- ↓ CAMBIO: clase dinámica para bajar z-index cuando hay modal abierto -->
                             <div id="cliente-map"
-                                class="w-full h-44 rounded-2xl overflow-hidden border-2 border-gray-100" />
+                                class="w-full h-44 rounded-2xl overflow-hidden border-2 border-gray-100"
+                                :class="{ 'relative !z-0': modalAbierto }" />
                             <a :href="`https://www.google.com/maps/dir/?api=1&destination=${despacho.order.lat},${despacho.order.lng}`"
                                 target="_blank" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl
                                        bg-blue-600 text-white font-bold text-[13px] no-underline
@@ -185,12 +187,10 @@
                                     <p class="text-[13.5px] text-gray-900 font-semibold m-0">
                                         {{ item.name }}
                                     </p>
-                                    <!-- Personalización -->
                                     <p v-if="item.custom_summary"
                                         class="text-[11px] text-gray-400 m-0 mt-0.5 leading-relaxed">
                                         {{ item.custom_summary }}
                                     </p>
-                                    <!-- Precio unitario -->
                                     <p v-if="item.unit_price" class="text-[11.5px] text-gray-400 m-0 mt-0.5">
                                         S/ {{ Number(item.unit_price).toFixed(2) }} c/u
                                     </p>
@@ -309,7 +309,7 @@
             <Transition enter-active-class="transition-opacity duration-200"
                 leave-active-class="transition-opacity duration-150" enter-from-class="opacity-0"
                 leave-to-class="opacity-0">
-                <div v-if="modalCobro.show" class="fixed inset-0 z-[300] bg-black/50 backdrop-blur-sm
+                <div v-if="modalCobro.show" class="fixed inset-0 z-[9999] bg-black/50 backdrop-blur-sm
                            flex items-center justify-center p-4" @click.self="modalCobro.show = false">
                     <Transition enter-active-class="transition-all duration-200 ease-out"
                         enter-from-class="opacity-0 scale-95" leave-to-class="opacity-0 scale-95">
@@ -370,7 +370,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed, nextTick, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, computed, nextTick, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useDespachosStore } from '../stores/despacho'
 import { useEcho } from '../composables/useEcho'
@@ -401,6 +401,11 @@ const confirmRecojo = reactive({ show: false })
 const confirmEntrega = reactive({ show: false })
 const confirmLogout = reactive({ show: false })
 const modalCobro = reactive({ show: false, monto: 0 })
+
+// ── Detectar si hay algún modal abierto (para bajar z-index del mapa) ──
+const modalAbierto = computed(() =>
+    confirmRecojo.show || confirmEntrega.show || confirmLogout.show || modalCobro.show
+)
 
 // ── Constantes ────────────────────────────────────────────
 const STEPS = [
@@ -454,9 +459,27 @@ function metodoPagoLabel(m: string): string {
 }
 
 // ── Mapa del cliente ──────────────────────────────────────
+function destroyMap() {
+    if (clienteMap) {
+        clienteMap.remove()
+        clienteMap = null
+    }
+}
+
+async function reinitMap() {
+    const o = despacho.value?.order
+    if (!o?.lat || !o?.lng) return
+    await nextTick()
+    // Esperar a que el DOM esté listo tras la transición
+    setTimeout(() => initClienteMap(), 50)
+}
+
 function initClienteMap() {
     const o = despacho.value?.order
     if (!o?.lat || !o?.lng) return
+
+    const el = document.getElementById('cliente-map')
+    if (!el) return
 
     delete (L.Icon.Default.prototype as any)._getIconUrl
     L.Icon.Default.mergeOptions({
@@ -494,7 +517,18 @@ function initClienteMap() {
     })
 
     L.marker([o.lat, o.lng], { icon: redIcon }).addTo(clienteMap)
+
+    // ← NUEVO: forzar recalculo de tamaño
+    setTimeout(() => {
+        clienteMap?.invalidateSize()
+    }, 100)
 }
+
+watch(() => despacho.value?.estado, async (nuevoEstado) => {
+    if (nuevoEstado) {
+        await reinitMap()
+    }
+})
 
 // ── Lifecycle ─────────────────────────────────────────────
 onMounted(async () => {
@@ -526,7 +560,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-    if (clienteMap) { clienteMap.remove(); clienteMap = null }
+    destroyMap()
 })
 
 // ── Acciones ──────────────────────────────────────────────
@@ -540,41 +574,59 @@ async function handleLogout() {
 
 async function executeRecojo() {
     if (!despacho.value) return
-    loadingAccion.value = true
-    const ok = await despachos.updateEstado(despacho.value.id, 'recogido')
-    if (ok) despacho.value = { ...despacho.value, estado: 'recogido' }
-    loadingAccion.value = false
+
     confirmRecojo.show = false
+    destroyMap()
+    const estadoAnterior = despacho.value.estado
+    despacho.value = { ...despacho.value, estado: 'recogido' }
+    loadingAccion.value = true
+
+    const ok = await despachos.updateEstado(despacho.value.id, 'recogido')
+    if (!ok) {
+        despacho.value = { ...despacho.value, estado: estadoAnterior }
+    }
+    loadingAccion.value = false
+    // El watch reinicia el mapa automáticamente
 }
 
 async function executeEntrega() {
     if (!despacho.value) return
+
+    confirmEntrega.show = false
+    // ← ya no llames destroyMap() aquí
+    const estadoAnterior = despacho.value.estado
+    despacho.value = { ...despacho.value, estado: 'entregado' }
     loadingAccion.value = true
+
     const ok = await despachos.updateEstado(despacho.value.id, 'entregado')
     if (ok) {
-        despacho.value = { ...despacho.value, estado: 'entregado' }
         await auth.updateEstado('disponible')
+    } else {
+        despacho.value = { ...despacho.value, estado: estadoAnterior }
     }
     loadingAccion.value = false
-    confirmEntrega.show = false
-}
-
-function abrirModalCobro() {
-    modalCobro.monto = despacho.value?.order?.total ?? 0
-    modalCobro.show = true
 }
 
 async function confirmarCobro() {
     if (!despacho.value) return
+
+    modalCobro.show = false
+    // ← ya no llames destroyMap() aquí
+    const estadoAnterior = despacho.value.estado
+    const montoCapturado = modalCobro.monto
+    despacho.value = { ...despacho.value, estado: 'entregado' }
     loadingAccion.value = true
+
     const ok = await despachos.updateEstado(
-        despacho.value.id, 'entregado', undefined, modalCobro.monto
+        despacho.value.id, 'entregado', undefined, montoCapturado
     )
     if (ok) {
-        despacho.value = { ...despacho.value, estado: 'entregado' }
         await auth.updateEstado('disponible')
-        modalCobro.show = false
+    } else {
+        despacho.value = { ...despacho.value, estado: estadoAnterior }
+        modalCobro.show = true
     }
     loadingAccion.value = false
 }
+
 </script>

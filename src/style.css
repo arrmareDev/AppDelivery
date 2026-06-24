@@ -34,3 +34,10 @@ textarea {
   background: #d1d5db;
   border-radius: 10px;
 }
+
+.leaflet-pane,
+.leaflet-control,
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 10 !important;
+}

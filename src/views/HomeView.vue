@@ -61,7 +61,8 @@
         </div>
 
         <!-- ══ PEDIDOS DISPONIBLES ══ -->
-        <div class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 pb-24 flex flex-col gap-3 overflow-y-auto">
+        <div
+            class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 pb-24 flex flex-col gap-3 overflow-y-auto">
 
             <div class="flex items-center justify-between mb-1">
                 <h2 class="font-black text-gray-900 text-lg sm:text-xl">Pedidos disponibles</h2>
@@ -118,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useDespachosStore } from '../stores/despacho'
@@ -191,14 +192,17 @@ function askAceptar(d: DespachoItem) {
 async function executeAceptar() {
     const d = confirmAceptar.target
     if (!d || aceptandoId.value) return
+
+    // Cerrar modal inmediatamente
+    confirmAceptar.show = false
     aceptandoId.value = d.id
+    await nextTick()
+
     try {
         await despachos.aceptar(d.id)
-        confirmAceptar.show = false
         router.push(`/despacho/${d.id}`)
     } catch (e: any) {
-        errorMsg.value = e.message
-        confirmAceptar.show = false
+        errorMsg.value = e.message ?? 'Error al aceptar el pedido'
         setTimeout(() => { errorMsg.value = '' }, 3_000)
     } finally {
         aceptandoId.value = null

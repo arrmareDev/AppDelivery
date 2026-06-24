@@ -9,47 +9,57 @@ import { watch } from 'vue'
 
 const props = defineProps<{ activa: boolean }>()
 
-// Sonido usando Web Audio API — no requiere archivo externo
-function playAlert() {
+// AudioContext singleton — se crea una sola vez y se reutiliza
+let ctx: AudioContext | null = null
+
+function getCtx(): AudioContext | null {
     try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
-
-        // Beep 1
-        const osc1 = ctx.createOscillator()
-        const gain1 = ctx.createGain()
-        osc1.connect(gain1)
-        gain1.connect(ctx.destination)
-        osc1.frequency.value = 880
-        gain1.gain.setValueAtTime(0.3, ctx.currentTime)
-        gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2)
-        osc1.start(ctx.currentTime)
-        osc1.stop(ctx.currentTime + 0.2)
-
-        // Beep 2
-        const osc2 = ctx.createOscillator()
-        const gain2 = ctx.createGain()
-        osc2.connect(gain2)
-        gain2.connect(ctx.destination)
-        osc2.frequency.value = 1100
-        gain2.gain.setValueAtTime(0.3, ctx.currentTime + 0.25)
-        gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45)
-        osc2.start(ctx.currentTime + 0.25)
-        osc2.stop(ctx.currentTime + 0.45)
-
-        // Beep 3
-        const osc3 = ctx.createOscillator()
-        const gain3 = ctx.createGain()
-        osc3.connect(gain3)
-        gain3.connect(ctx.destination)
-        osc3.frequency.value = 1320
-        gain3.gain.setValueAtTime(0.4, ctx.currentTime + 0.5)
-        gain3.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8)
-        osc3.start(ctx.currentTime + 0.5)
-        osc3.stop(ctx.currentTime + 0.8)
-
-    } catch (e) {
-        console.warn('Audio no disponible:', e)
+        if (!ctx) {
+            ctx = new (window.AudioContext || (window as any).webkitAudioContext)()
+        }
+        if (ctx.state === 'suspended') {
+            ctx.resume()
+        }
+        return ctx
+    } catch {
+        return null
     }
+}
+
+// Inicializar el contexto en el primer gesto del usuario
+// para que Chrome lo permita cuando llegue un pedido real
+function initOnGesture() {
+    getCtx()
+    window.removeEventListener('click', initOnGesture)
+    window.removeEventListener('touchstart', initOnGesture)
+}
+
+window.addEventListener('click', initOnGesture, { once: true })
+window.addEventListener('touchstart', initOnGesture, { once: true })
+
+function playAlert() {
+    const audioCtx = getCtx()
+    if (!audioCtx) return
+
+    // 3 beeps ascendentes
+    const beeps = [
+        { freq: 880, start: 0, end: 0.2 },
+        { freq: 1100, start: 0.25, end: 0.45 },
+        { freq: 1320, start: 0.5, end: 0.8 },
+    ]
+
+    beeps.forEach(({ freq, start, end }) => {
+        const osc = audioCtx.createOscillator()
+        const gain = audioCtx.createGain()
+        osc.connect(gain)
+        gain.connect(audioCtx.destination)
+        osc.frequency.value = freq
+        osc.type = 'sine'
+        gain.gain.setValueAtTime(0.35, audioCtx.currentTime + start)
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + end)
+        osc.start(audioCtx.currentTime + start)
+        osc.stop(audioCtx.currentTime + end)
+    })
 }
 
 watch(() => props.activa, (val) => {
