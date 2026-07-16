@@ -48,7 +48,6 @@ export const useDespachosStore = defineStore("despachos", () => {
   const historial = ref<DespachoItem[]>([]);
   const loading = ref(false);
   const totalHoy = ref(0);
-  const gananciaHoy = ref(0);
   const nuevoPedido = ref(false); // flag para alerta sonido
 
   async function fetchDisponibles() {
@@ -71,7 +70,6 @@ export const useDespachosStore = defineStore("despachos", () => {
       const { data } = await api.get("/motorizado/historial");
       historial.value = data.data.despachos ?? data.data;
       totalHoy.value = data.data.total_hoy ?? 0;
-      gananciaHoy.value = data.data.ganancia_hoy ?? 0;
     } catch {
     } finally {
       loading.value = false;
@@ -138,7 +136,6 @@ export const useDespachosStore = defineStore("despachos", () => {
     historial,
     loading,
     totalHoy,
-    gananciaHoy,
     nuevoPedido,
     fetchDisponibles,
     fetchActivo,

@@ -17,6 +17,24 @@ const router = createRouter({
       meta: { guest: true },
     },
     {
+      path: "/forgot-password",
+      name: "forgot-password",
+      component: () => import("../views/ForgotPasswordView.vue"),
+      meta: { guest: true },
+    },
+    {
+      path: "/reset-password",
+      name: "reset-password",
+      component: () => import("../views/ResetPasswordView.vue"),
+      meta: { guest: true },
+    },
+    {
+      path: "/verificar-correo",
+      name: "verificar-correo",
+      component: () => import("../views/VerificarCorreoView.vue"),
+      meta: { auth: true },
+    },
+    {
       path: "/",
       name: "home",
       component: () => import("../views/HomeView.vue"),
@@ -38,7 +56,9 @@ const router = createRouter({
       path: "/perfil",
       name: "perfil",
       component: () => import("../views/PerfilView.vue"),
-      meta: { requiresAuth: true },
+      // ↓ CORREGIDO: antes decía `requiresAuth` (no coincide con el guard
+      // de abajo, que lee `auth`), así que esta ruta quedaba SIN protección.
+      meta: { auth: true },
     },
     {
       path: "/:pathMatch(.*)*",
@@ -49,8 +69,20 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const auth = useAuthStore();
+
   if (to.meta.auth && !auth.isAuth) return "/login";
   if (to.meta.guest && auth.isAuth) return "/";
+
+  // Bloquea toda ruta autenticada si el correo no está verificado,
+  // salvo la propia pantalla de verificación (para no hacer un loop).
+  if (
+    to.meta.auth &&
+    auth.isAuth &&
+    !auth.isEmailVerificado &&
+    to.name !== "verificar-correo"
+  ) {
+    return "/verificar-correo";
+  }
 });
 
 export default router;

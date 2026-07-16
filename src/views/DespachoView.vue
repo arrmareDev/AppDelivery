@@ -1,47 +1,54 @@
 <template>
-    <div class="min-h-screen flex flex-col bg-gray-50">
+    <div class="app-shell">
 
         <!-- Header -->
-        <header class="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-4 shrink-0">
-            <div class="max-w-2xl mx-auto flex items-center gap-3">
-                <button @click="router.push('/')" class="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center
-                           border-none cursor-pointer hover:bg-gray-200 transition-colors shrink-0">
-                    ←
+        <header class="app-header">
+            <div class="max-w-5xl mx-auto flex items-center gap-3">
+                <button @click="router.push('/')" class="back-btn">
+                    <ArrowLeftIcon class="w-4 h-4" />
                 </button>
                 <div>
-                    <h1 class="font-black text-lg sm:text-xl text-gray-900 leading-tight">
+                    <h1 class="font-black text-lg sm:text-xl leading-tight" style="color: var(--color-ink)">
                         Pedido #{{ despacho?.order_id }}
                     </h1>
-                    <p class="text-xs text-gray-400">{{ estadoLabel(despacho?.estado ?? '') }}</p>
+                    <p class="text-xs" style="color: var(--color-ink-faint)">{{ estadoLabel(despacho?.estado ?? '') }}
+                    </p>
                 </div>
             </div>
         </header>
 
         <!-- Loading -->
         <div v-if="loading" class="flex-1 flex items-center justify-center">
-            <div class="w-8 h-8 border-2 border-gray-200 border-t-red-600 rounded-full animate-spin" />
+            <div class="w-8 h-8 border-2 border-gray-200 rounded-full animate-spin"
+                style="border-top-color: var(--color-brand-600)" />
         </div>
 
         <template v-else-if="despacho">
-            <div class="max-w-2xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex-1 pb-24">
+            <div class="max-w-5xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex-1 pb-24">
 
-                <!-- ══ TIMELINE ══ -->
-                <div class="mt-4 bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-2">
+                <!-- ══ TIMELINE — línea de ruta ══ -->
+                <div class="mt-4 card p-4 flex items-center gap-2">
                     <div v-for="(step, i) in STEPS" :key="step.value" class="flex-1 flex flex-col items-center gap-1">
                         <div class="flex items-center w-full">
                             <div class="w-7 h-7 rounded-full border-2 flex items-center justify-center
-                                        text-xs font-black shrink-0" :class="stepDone(step.value)
-                                            ? 'bg-red-600 border-red-600 text-white'
+                                        text-xs font-black shrink-0 transition-colors duration-300" :class="stepDone(step.value)
+                                            ? 'text-white'
                                             : stepActive(step.value)
-                                                ? 'bg-red-50 border-red-600 text-red-600'
-                                                : 'bg-white border-gray-200 text-gray-300'">
-                                <span v-if="stepDone(step.value)">✓</span>
+                                                ? ''
+                                                : 'bg-white border-gray-200 text-gray-300'" :style="stepDone(step.value)
+                                                    ? `background: var(--color-brand-600); border-color: var(--color-brand-600)`
+                                                    : stepActive(step.value)
+                                                        ? `background: var(--color-brand-50); border-color: var(--color-brand-600); color: var(--color-brand-600)`
+                                                        : ''">
+                                <CheckIcon v-if="stepDone(step.value)" class="w-3.5 h-3.5" />
+                                <span v-else-if="stepActive(step.value)" class="w-2 h-2 rounded-full animate-pulse"
+                                    style="background: var(--color-brand-600)" />
                             </div>
-                            <div v-if="i < STEPS.length - 1" class="flex-1 h-0.5 mx-1"
-                                :class="stepDone(step.value) ? 'bg-red-600' : 'bg-gray-100'" />
+                            <div v-if="i < STEPS.length - 1" class="flex-1 h-1 mx-1 rounded-full route-line"
+                                :class="stepDone(step.value) ? 'route-line--done' : ''" />
                         </div>
                         <span class="text-[9px] sm:text-[10px] font-bold text-center"
-                            :class="stepActive(step.value) ? 'text-red-600' : 'text-gray-400'">
+                            :style="stepActive(step.value) ? 'color: var(--color-brand-600)' : 'color: var(--color-ink-faint)'">
                             {{ step.label }}
                         </span>
                     </div>
@@ -52,10 +59,9 @@
                     :class="esContraentrega
                         ? 'bg-amber-50 border border-amber-200'
                         : 'bg-green-50 border border-green-200'">
-                    <span class="text-xl shrink-0">
-                        {{ despacho.order.metodo_pago === 'contraentrega_yape' ? '📱'
-                            : despacho.order.metodo_pago === 'contraentrega_efectivo' ? '💵' : '💳' }}
-                    </span>
+                    <component :is="despacho.order.metodo_pago === 'contraentrega_yape' ? DevicePhoneMobileIcon
+                        : despacho.order.metodo_pago === 'contraentrega_efectivo' ? BanknotesIcon : CreditCardIcon"
+                        class="w-6 h-6 shrink-0" :class="esContraentrega ? 'text-amber-600' : 'text-green-600'" />
                     <div>
                         <p class="font-bold text-[13px] m-0"
                             :class="esContraentrega ? 'text-amber-800' : 'text-green-800'">
@@ -74,33 +80,29 @@
                 <div class="grid lg:grid-cols-2 gap-3 mt-3">
 
                     <!-- INFO CLIENTE -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex flex-col gap-3">
+                    <div class="card p-4 flex flex-col gap-3">
 
                         <!-- Badge restaurante -->
-                        <span v-if="despacho.restaurant" class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full
-                                   bg-purple-50 text-purple-700 border border-purple-200 self-start">
+                        <span v-if="despacho.restaurant"
+                            class="badge bg-purple-50 text-purple-700 border-purple-200 self-start">
                             {{ despacho.restaurant }}
                         </span>
 
                         <!-- Nombre cliente -->
-                        <h2 class="font-black text-gray-900 text-[16px] m-0">
+                        <h2 class="font-black text-[16px] m-0" style="color: var(--color-ink)">
                             {{ despacho.order?.client_name }}
                         </h2>
 
                         <!-- Llamar al cliente -->
                         <a :href="`tel:${despacho.order?.client_phone}`"
                             class="flex items-center gap-3 no-underline group">
-                            <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center
-                                        shrink-0 group-hover:bg-green-100 transition-colors">
-                                <svg class="w-4 h-4 text-green-600" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
-                                </svg>
+                            <div class="icon-tile bg-green-50 group-hover:bg-green-100 transition-colors">
+                                <PhoneIcon class="w-4 h-4 text-green-600" />
                             </div>
                             <div>
-                                <p class="text-[10.5px] text-gray-400 font-medium m-0">Llamar al cliente</p>
-                                <p class="font-bold text-gray-900 text-sm m-0">
+                                <p class="text-[10.5px] font-medium m-0" style="color: var(--color-ink-faint)">Llamar al
+                                    cliente</p>
+                                <p class="font-bold text-sm m-0" style="color: var(--color-ink)">
                                     {{ despacho.order?.client_phone }}
                                 </p>
                             </div>
@@ -108,17 +110,13 @@
 
                         <!-- Dirección -->
                         <div class="flex items-start gap-3">
-                            <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center
-                                        shrink-0 mt-0.5">
-                                <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                </svg>
+                            <div class="icon-tile bg-blue-50 mt-0.5">
+                                <MapPinIcon class="w-4 h-4 text-blue-600" />
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-[10.5px] text-gray-400 font-medium m-0">Dirección de entrega</p>
-                                <p class="font-bold text-gray-900 text-sm m-0">
+                                <p class="text-[10.5px] font-medium m-0" style="color: var(--color-ink-faint)">Dirección
+                                    de entrega</p>
+                                <p class="font-bold text-sm m-0" style="color: var(--color-ink)">
                                     {{ despacho.order?.address }}
                                 </p>
                                 <p v-if="despacho.order?.district" class="text-xs text-gray-500 m-0 mt-0.5">
@@ -130,8 +128,9 @@
                         <!-- Referencia — DESTACADA -->
                         <div v-if="despacho.order?.reference"
                             class="px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-200">
-                            <p class="text-[10.5px] font-black text-amber-600 uppercase tracking-wider m-0 mb-0.5">
-                                📍 Referencia
+                            <p
+                                class="text-[10.5px] font-black text-amber-600 uppercase tracking-wider m-0 mb-0.5 flex items-center gap-1">
+                                <MapPinIcon class="w-3 h-3" /> Referencia
                             </p>
                             <p class="text-[13px] font-bold text-amber-900 m-0">
                                 {{ despacho.order.reference }}
@@ -141,15 +140,17 @@
                         <!-- Nota del cliente -->
                         <div v-if="despacho.order?.note"
                             class="px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-100">
-                            <p class="text-[10.5px] font-black text-gray-400 uppercase tracking-wider m-0 mb-0.5">
-                                💬 Nota del cliente
+                            <p
+                                class="text-[10.5px] font-black text-gray-400 uppercase tracking-wider m-0 mb-0.5 flex items-center gap-1">
+                                <ChatBubbleLeftEllipsisIcon class="w-3 h-3" /> Nota del cliente
                             </p>
                             <p class="text-[12.5px] text-gray-700 m-0">{{ despacho.order.note }}</p>
                         </div>
 
                         <!-- Mapa del cliente (si hay coordenadas GPS) -->
                         <div v-if="despacho.order?.lat && despacho.order?.lng" class="flex flex-col gap-2">
-                            <p class="text-[10.5px] font-black text-gray-400 uppercase tracking-wider m-0">
+                            <p class="text-[10.5px] font-black uppercase tracking-wider m-0"
+                                style="color: var(--color-ink-faint)">
                                 Ubicación exacta del cliente
                             </p>
                             <!-- ↓ CAMBIO: clase dinámica para bajar z-index cuando hay modal abierto -->
@@ -160,7 +161,7 @@
                                 target="_blank" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl
                                        bg-blue-600 text-white font-bold text-[13px] no-underline
                                        hover:bg-blue-700 active:scale-[0.98] transition-all duration-150">
-                                🗺️ Navegar con Google Maps
+                                <MapIcon class="w-4 h-4" /> Navegar con Google Maps
                             </a>
                         </div>
 
@@ -168,15 +169,15 @@
                         <a v-else :href="mapsLink" target="_blank" class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl
                                    bg-blue-600 text-white font-bold text-[13px] no-underline
                                    hover:bg-blue-700 active:scale-[0.98] transition-all duration-150">
-                            🗺️ Abrir en Google Maps
+                            <MapIcon class="w-4 h-4" /> Abrir en Google Maps
                         </a>
                     </div>
 
                     <!-- DETALLE DEL PEDIDO -->
-                    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden h-fit">
+                    <div class="card overflow-hidden h-fit">
 
                         <div class="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
-                            <h3 class="font-black text-gray-900 text-sm m-0">Detalle del pedido</h3>
+                            <h3 class="font-black text-sm m-0" style="color: var(--color-ink)">Detalle del pedido</h3>
                         </div>
 
                         <!-- Items -->
@@ -184,24 +185,26 @@
                             <div v-for="item in despacho.order?.items" :key="item.name"
                                 class="flex items-start justify-between px-4 py-3 gap-3">
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-[13.5px] text-gray-900 font-semibold m-0">
+                                    <p class="text-[13.5px] font-semibold m-0" style="color: var(--color-ink)">
                                         {{ item.name }}
                                     </p>
-                                    <p v-if="item.custom_summary"
-                                        class="text-[11px] text-gray-400 m-0 mt-0.5 leading-relaxed">
+                                    <p v-if="item.custom_summary" class="text-[11px] m-0 mt-0.5 leading-relaxed"
+                                        style="color: var(--color-ink-faint)">
                                         {{ item.custom_summary }}
                                     </p>
-                                    <p v-if="item.unit_price" class="text-[11.5px] text-gray-400 m-0 mt-0.5">
-                                        S/ {{ Number(item.unit_price).toFixed(2) }} c/u
+                                    <p v-if="precioUnitario(item) !== null" class="text-[11.5px] m-0 mt-0.5"
+                                        style="color: var(--color-ink-faint)">
+                                        S/ {{ precioUnitario(item)!.toFixed(2) }} c/u
                                     </p>
                                 </div>
                                 <div class="flex flex-col items-end gap-0.5 shrink-0">
-                                    <span class="text-xs font-black text-gray-500 bg-gray-100
+                                    <span class="order-code text-xs text-gray-500 bg-gray-100
                                                  px-2 py-0.5 rounded-lg">
                                         x{{ item.qty }}
                                     </span>
-                                    <span v-if="item.subtotal" class="text-[12px] font-bold text-gray-700">
-                                        S/ {{ Number(item.subtotal).toFixed(2) }}
+                                    <span v-if="precioSubtotal(item) !== null" class="amount text-[12px]"
+                                        style="color: var(--color-ink-soft)">
+                                        S/ {{ precioSubtotal(item)!.toFixed(2) }}
                                     </span>
                                 </div>
                             </div>
@@ -212,75 +215,55 @@
                             <div v-if="despacho.order?.subtotal"
                                 class="flex items-center justify-between text-[12.5px]">
                                 <span class="text-gray-500">Subtotal</span>
-                                <span class="font-semibold text-gray-700">
+                                <span class="amount" style="color: var(--color-ink-soft)">
                                     S/ {{ Number(despacho.order.subtotal).toFixed(2) }}
                                 </span>
                             </div>
                             <div v-if="despacho.order?.delivery_fee"
                                 class="flex items-center justify-between text-[12.5px]">
                                 <span class="text-gray-500">Delivery</span>
-                                <span class="font-semibold text-blue-600">
+                                <span class="amount text-blue-600">
                                     S/ {{ Number(despacho.order.delivery_fee).toFixed(2) }}
                                 </span>
                             </div>
                             <div class="flex items-center justify-between pt-1.5 border-t border-gray-200">
-                                <span class="font-bold text-[13px] text-gray-700">Total</span>
+                                <span class="font-bold text-[13px]" style="color: var(--color-ink-soft)">Total</span>
                                 <div class="flex items-baseline gap-0.5">
                                     <span class="text-[11px] text-gray-400">S/</span>
-                                    <span class="font-black text-[18px] text-red-600 leading-none">
+                                    <span class="amount text-[18px] leading-none" style="color: var(--color-brand-600)">
                                         {{ Number(despacho.order?.total).toFixed(2) }}
                                     </span>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Comisión del motorizado -->
-                        <div class="px-4 py-3 border-t border-gray-100 flex items-center
-                                    justify-between bg-purple-50/50">
-                            <span class="text-[12px] text-purple-600 font-medium">
-                                Tu comisión por esta entrega
-                            </span>
-                            <div class="flex items-baseline gap-0.5">
-                                <span class="text-[10px] text-purple-400">S/</span>
-                                <span class="font-black text-[15px] text-purple-700 leading-none">
-                                    {{ Number(despacho.comision_motorizado).toFixed(2) }}
-                                </span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- ══ BOTÓN DE ACCIÓN ══ -->
-                <div class="mt-4 mb-6 sm:max-w-md sm:mx-auto lg:max-w-none">
+                <div class="mt-4 mb-6 sm:max-w-md sm:mx-auto lg:max-w-2xl">
 
                     <button v-if="despacho.estado === 'aceptado'" @click="confirmRecojo.show = true"
-                        :disabled="loadingAccion" class="w-full py-4 rounded-2xl bg-amber-500 text-white font-black
-                               text-sm uppercase tracking-wide border-none cursor-pointer
-                               shadow-lg shadow-amber-500/30 hover:bg-amber-600 active:scale-[0.98]
-                               disabled:opacity-50 transition-all duration-150
-                               flex items-center justify-center gap-2">
-                        📦 Confirmar recojo en local
+                        :disabled="loadingAccion" class="btn-lg text-white bg-amber-500 shadow-lg shadow-amber-500/30
+                               hover:bg-amber-600 uppercase tracking-wide">
+                        <ArchiveBoxArrowDownIcon class="w-5 h-5" /> Confirmar recojo en local
                     </button>
 
                     <button v-else-if="despacho.estado === 'recogido'"
                         @click="esContraentrega ? abrirModalCobro() : (confirmEntrega.show = true)"
-                        :disabled="loadingAccion" class="w-full py-4 rounded-2xl bg-green-600 text-white font-black
-                               text-sm uppercase tracking-wide border-none cursor-pointer
-                               shadow-lg shadow-green-600/30 hover:bg-green-700 active:scale-[0.98]
-                               disabled:opacity-50 transition-all duration-150
-                               flex items-center justify-center gap-2">
-                        ✅ Confirmar entrega
+                        :disabled="loadingAccion" class="btn-lg text-white bg-green-600 shadow-lg shadow-green-600/30
+                               hover:bg-green-700 uppercase tracking-wide">
+                        <CheckCircleIcon class="w-5 h-5" /> Confirmar entrega
                     </button>
 
                     <div v-else-if="despacho.estado === 'entregado'" class="text-center py-6">
                         <div class="w-16 h-16 rounded-full bg-green-100 flex items-center
                                     justify-center mx-auto mb-3">
-                            <span class="text-3xl">✅</span>
+                            <CheckCircleIcon class="w-9 h-9 text-green-600" />
                         </div>
-                        <p class="font-black text-gray-900">¡Entregado!</p>
-                        <p class="text-sm text-gray-400 mt-1">Pedido completado exitosamente</p>
-                        <button @click="router.push('/')" class="mt-4 px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold
-                                   text-sm border-none cursor-pointer hover:bg-red-700 transition-colors">
+                        <p class="font-black" style="color: var(--color-ink)">¡Entregado!</p>
+                        <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Pedido completado exitosamente</p>
+                        <button @click="router.push('/')" class="btn mt-4 px-6 py-2.5 text-sm text-white"
+                            style="background: var(--color-brand-600)">
                             Volver al inicio
                         </button>
                     </div>
@@ -289,7 +272,7 @@
         </template>
 
         <!-- ══ NAV FIJO ══ -->
-        <BottomNav active="" @navigate="router.push($event)" @logout="confirmLogout.show = true" />
+        <AppNav active="" @navigate="router.push($event)" @logout="confirmLogout.show = true" />
 
         <!-- ══ MODALES ══ -->
         <ConfirmModal v-model="confirmRecojo.show" title="¿Confirmar recojo en el local?"
@@ -313,17 +296,17 @@
                            flex items-center justify-center p-4" @click.self="modalCobro.show = false">
                     <Transition enter-active-class="transition-all duration-200 ease-out"
                         enter-from-class="opacity-0 scale-95" leave-to-class="opacity-0 scale-95">
-                        <div v-if="modalCobro.show" class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6">
+                        <div class="w-full max-w-sm bg-white rounded-3xl shadow-2xl p-6">
                             <div class="w-14 h-14 rounded-2xl bg-green-50 mx-auto mb-4
                                         flex items-center justify-center">
-                                <span class="text-2xl">
-                                    {{ despacho?.order?.metodo_pago === 'contraentrega_yape' ? '📱' : '💵' }}
-                                </span>
+                                <component
+                                    :is="despacho?.order?.metodo_pago === 'contraentrega_yape' ? DevicePhoneMobileIcon : BanknotesIcon"
+                                    class="w-7 h-7 text-green-600" />
                             </div>
-                            <h3 class="font-black text-[18px] text-gray-900 m-0 mb-1 text-center">
+                            <h3 class="font-black text-[18px] m-0 mb-1 text-center" style="color: var(--color-ink)">
                                 Confirmar cobro
                             </h3>
-                            <p class="text-[13px] text-gray-400 m-0 mb-5 text-center">
+                            <p class="text-[13px] m-0 mb-5 text-center" style="color: var(--color-ink-faint)">
                                 {{ despacho?.order?.metodo_pago === 'contraentrega_yape'
                                     ? 'Confirma que recibiste el pago por Yape/Plin'
                                     : 'Confirma el monto recibido en efectivo' }}
@@ -333,31 +316,23 @@
                                 <span class="text-[13px] font-semibold text-gray-600">Total del pedido</span>
                                 <div class="flex items-baseline gap-0.5">
                                     <span class="text-[12px] text-gray-400">S/</span>
-                                    <span class="font-black text-[20px] text-gray-900 leading-none">
+                                    <span class="amount text-[20px] leading-none" style="color: var(--color-ink)">
                                         {{ Number(despacho?.order?.total).toFixed(2) }}
                                     </span>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-1.5 mb-5">
-                                <label class="text-[10.5px] font-black uppercase tracking-widest text-gray-400">
-                                    Monto cobrado (S/)
-                                </label>
-                                <input v-model="modalCobro.monto" type="number" step="0.50" min="0" class="w-full px-4 py-3 rounded-2xl border-2 border-gray-100
-                                           bg-gray-50 text-[16px] font-bold text-gray-900 outline-none
-                                           focus:border-green-500 focus:bg-white transition-all duration-200" />
+                                <label class="field-label">Monto cobrado (S/)</label>
+                                <input v-model="modalCobro.monto" type="number" step="0.50" min="0"
+                                    class="field-input font-bold text-[16px]" />
                             </div>
                             <div class="flex gap-3">
-                                <button @click="modalCobro.show = false" class="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600
-                                           font-semibold text-[13.5px] cursor-pointer bg-white
-                                           hover:border-gray-300 transition-all duration-150">
+                                <button @click="modalCobro.show = false" class="btn-outline flex-1">
                                     Cancelar
                                 </button>
-                                <button @click="confirmarCobro" :disabled="loadingAccion" class="flex-1 py-3 rounded-2xl text-white font-bold text-[13.5px]
-                                           cursor-pointer border-none bg-green-600 hover:bg-green-700
-                                           disabled:opacity-50 transition-all duration-150
-                                           flex items-center justify-center gap-2">
-                                    <span v-if="loadingAccion" class="w-4 h-4 border-2 border-white/30 border-t-white
-                                               rounded-full animate-spin" />
+                                <button @click="confirmarCobro" :disabled="loadingAccion"
+                                    class="btn flex-1 py-3 text-[13.5px] text-white bg-green-600 hover:bg-green-700">
+                                    <span v-if="loadingAccion" class="spinner" />
                                     {{ loadingAccion ? 'Confirmando...' : 'Confirmar' }}
                                 </button>
                             </div>
@@ -372,11 +347,23 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed, nextTick, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import {
+    ArrowLeftIcon,
+    MapPinIcon,
+    PhoneIcon,
+    ChatBubbleLeftEllipsisIcon,
+    MapIcon,
+    DevicePhoneMobileIcon,
+    BanknotesIcon,
+    CreditCardIcon,
+    ArchiveBoxArrowDownIcon,
+} from '@heroicons/vue/24/outline'
+import { CheckIcon, CheckCircleIcon } from '@heroicons/vue/24/solid'
 import { useDespachosStore } from '../stores/despacho'
 import { useEcho } from '../composables/useEcho'
 import { useAuthStore } from '../stores/auth'
 import ConfirmModal from '../components/ConfirmModal.vue'
-import BottomNav from '../components/BottomNav.vue'
+import AppNav from '../components/AppNav.vue'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
@@ -447,6 +434,21 @@ function estadoLabel(s: string): string {
         entregado: 'Entregado',
     }
     return m[s] ?? s
+}
+
+// Precio por unidad — se deriva de subtotal/qty si el backend no manda
+// unit_price directamente, para que el precio siempre se muestre
+// mientras exista al menos uno de los dos campos.
+function precioUnitario(item: { unit_price?: number; subtotal?: number; qty: number }): number | null {
+    if (item.unit_price != null) return Number(item.unit_price)
+    if (item.subtotal != null && item.qty) return Number(item.subtotal) / item.qty
+    return null
+}
+
+function precioSubtotal(item: { unit_price?: number; subtotal?: number; qty: number }): number | null {
+    if (item.subtotal != null) return Number(item.subtotal)
+    if (item.unit_price != null) return Number(item.unit_price) * item.qty
+    return null
 }
 
 function metodoPagoLabel(m: string): string {

@@ -1,14 +1,14 @@
 <template>
-    <div class="min-h-screen flex flex-col bg-gray-50">
+    <div class="app-shell">
 
         <AlertaSonido :activa="despachos.nuevoPedido" />
 
         <!-- ══ HEADER ══ -->
-        <header class="bg-white border-b border-gray-100 px-4 sm:px-6 lg:px-8 py-4 shrink-0">
-            <div class="max-w-4xl mx-auto flex items-center justify-between gap-3 flex-wrap">
+        <header class="app-header">
+            <div class="app-container flex items-center justify-between gap-3 flex-wrap">
                 <div>
-                    <p class="text-xs text-gray-400 font-medium">Bienvenido</p>
-                    <h1 class="font-black text-lg sm:text-xl text-gray-900 leading-tight">
+                    <p class="text-xs font-medium" style="color: var(--color-ink-faint)">Bienvenido</p>
+                    <h1 class="font-black text-lg sm:text-xl leading-tight" style="color: var(--color-ink)">
                         {{ auth.user?.nombre }}
                     </h1>
                 </div>
@@ -28,9 +28,9 @@
 
             <Transition enter-active-class="transition-all duration-200" enter-from-class="opacity-0 -translate-y-1"
                 leave-to-class="opacity-0">
-                <div v-if="!auth.user?.verificado" class="max-w-4xl mx-auto mt-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200
+                <div v-if="!auth.user?.verificado" class="app-container mt-3 px-4 py-3 rounded-2xl bg-amber-50 border border-amber-200
                            flex items-center gap-3">
-                    <span class="text-xl shrink-0">⏳</span>
+                    <ClockIcon class="w-6 h-6 text-amber-500 shrink-0" />
                     <div>
                         <p class="font-bold text-[13px] text-amber-800 m-0">Cuenta pendiente de verificación</p>
                         <p class="text-[12px] text-amber-600 m-0 mt-0.5">
@@ -42,7 +42,7 @@
         </header>
 
         <!-- ══ DESPACHO ACTIVO ══ -->
-        <div class="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8">
+        <div class="app-container px-4 sm:px-6 lg:px-8">
             <div v-if="despachos.activo" class="mt-4 p-4 rounded-2xl bg-amber-50 border-2 border-amber-300
                        cursor-pointer active:scale-[0.98] sm:hover:scale-[1.01] transition-all duration-150"
                 @click="router.push(`/despacho/${despachos.activo!.id}`)">
@@ -52,51 +52,47 @@
                         {{ estadoLabel(despachos.activo.estado) }}
                     </span>
                 </div>
-                <p class="font-black text-gray-900">{{ despachos.activo.order?.client_name }}</p>
+                <p class="font-black" style="color: var(--color-ink)">{{ despachos.activo.order?.client_name }}</p>
                 <p class="text-sm text-gray-500 mt-0.5">
                     {{ despachos.activo.order?.address }}, {{ despachos.activo.order?.district }}
                 </p>
-                <p class="text-sm font-black text-red-600 mt-2">Toca para ver el detalle →</p>
+                <p class="text-sm font-black mt-2" style="color: var(--color-brand-600)">Toca para ver el detalle →</p>
             </div>
         </div>
 
         <!-- ══ PEDIDOS DISPONIBLES ══ -->
-        <div
-            class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 pb-24 flex flex-col gap-3 overflow-y-auto">
+        <div class="flex-1 app-container px-4 sm:px-6 lg:px-8 py-4 pb-24 flex flex-col gap-3 overflow-y-auto">
 
             <div class="flex items-center justify-between mb-1">
-                <h2 class="font-black text-gray-900 text-lg sm:text-xl">Pedidos disponibles</h2>
+                <h2 class="font-black text-lg sm:text-xl" style="color: var(--color-ink)">Pedidos disponibles</h2>
                 <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-gray-100 text-gray-500">
                     {{ despachos.disponibles.length }}
                 </span>
             </div>
 
-            <div v-if="despachos.disponibles.length === 0 && !loading"
-                class="flex flex-col items-center py-16 text-gray-400 gap-3">
-                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                    </svg>
+            <div v-if="despachos.disponibles.length === 0 && !loading" class="empty-state">
+                <div class="empty-state-icon">
+                    <TruckIcon class="w-8 h-8 text-gray-300" />
                 </div>
-                <div class="text-center">
-                    <p class="font-bold text-gray-600 text-sm">Sin pedidos disponibles</p>
+                <div>
+                    <p class="font-bold text-sm" style="color: var(--color-ink-soft)">Sin pedidos disponibles</p>
                     <p class="text-xs mt-1">Espera nuevos pedidos de delivery</p>
                 </div>
             </div>
 
-            <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 <div v-for="n in 3" :key="n" class="h-36 rounded-2xl bg-gray-100 animate-pulse" />
             </div>
 
-            <TransitionGroup name="pedido" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            <TransitionGroup name="pedido" tag="div"
+                class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 <PedidoCard v-for="d in despachos.disponibles" :key="d.id" :despacho="d"
                     :aceptando="aceptandoId === d.id" @aceptar="askAceptar(d)" />
             </TransitionGroup>
         </div>
 
         <!-- ══ NAV — visible en todas las pantallas ══ -->
-        <BottomNav active="home" @navigate="router.push($event)" @logout="confirmLogout.show = true" />
+        <AppNav active="home" @navigate="router.push($event)" @logout="confirmLogout.show = true" />
 
         <!-- ══ MODALES DE CONFIRMACIÓN ══ -->
         <ConfirmModal v-model="confirmEstado.show"
@@ -121,13 +117,14 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
+import { TruckIcon, ClockIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '../stores/auth'
 import { useDespachosStore } from '../stores/despacho'
 import { useEcho } from '../composables/useEcho'
 import PedidoCard from '../components/PedidoCard.vue'
 import AlertaSonido from '../components/AlertaSonido.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
-import BottomNav from '../components/BottomNav.vue'
+import AppNav from '../components/AppNav.vue'
 import type { DespachoItem } from '../stores/despacho'
 
 const router = useRouter()

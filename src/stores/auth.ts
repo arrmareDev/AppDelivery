@@ -13,6 +13,10 @@ export interface Motorizado {
   activo: boolean;
   lat: number | null;
   lng: number | null;
+  // Verificación de propiedad del correo (distinta de `verificado`,
+  // que es la aprobación del administrador). Opcional para no romper
+  // nada mientras el backend no la envíe todavía.
+  email_verificado?: boolean;
 }
 
 export const useAuthStore = defineStore("auth", () => {
@@ -25,6 +29,10 @@ export const useAuthStore = defineStore("auth", () => {
   const isAuth = computed(() => !!token.value);
   const isDisponible = computed(() => user.value?.estado === "disponible");
   const isOcupado = computed(() => user.value?.estado === "ocupado");
+  // Por defecto true (no bloquea nada) hasta que el backend envíe el campo
+  const isEmailVerificado = computed(
+    () => user.value?.email_verificado ?? true,
+  );
 
   async function login(email: string, password: string): Promise<boolean> {
     loading.value = true;
@@ -145,6 +153,67 @@ export const useAuthStore = defineStore("auth", () => {
     } catch {}
   }
 
+  // ── Recuperar contraseña ──────────────────────────────────
+  async function requestPasswordReset(
+    email: string,
+  ): Promise<{ ok: boolean; message: string }> {
+    try {
+      const { data } = await api.post("/motorizado/auth/forgot-password", {
+        email,
+      });
+      return {
+        ok: true,
+        message: data.message ?? "Si el correo existe, te enviamos un enlace.",
+      };
+    } catch (e: any) {
+      return {
+        ok: false,
+        message:
+          e.response?.data?.message ?? "No pudimos procesar la solicitud",
+      };
+    }
+  }
+
+  async function resetPassword(payload: {
+    token: string;
+    email: string;
+    password: string;
+    password_confirmation: string;
+  }): Promise<{ ok: boolean; message: string }> {
+    try {
+      const { data } = await api.post(
+        "/motorizado/auth/reset-password",
+        payload,
+      );
+      return {
+        ok: true,
+        message: data.message ?? "Contraseña actualizada correctamente",
+      };
+    } catch (e: any) {
+      return {
+        ok: false,
+        message:
+          e.response?.data?.message ?? "El enlace no es válido o ya expiró",
+      };
+    }
+  }
+
+  // ── Verificación de correo ────────────────────────────────
+  async function resendVerification(): Promise<{
+    ok: boolean;
+    message: string;
+  }> {
+    try {
+      const { data } = await api.post("/motorizado/auth/resend-verification");
+      return { ok: true, message: data.message ?? "Correo reenviado" };
+    } catch (e: any) {
+      return {
+        ok: false,
+        message: e.response?.data?.message ?? "No pudimos reenviar el correo",
+      };
+    }
+  }
+
   return {
     token,
     user,
@@ -152,6 +221,7 @@ export const useAuthStore = defineStore("auth", () => {
     isAuth,
     isDisponible,
     isOcupado,
+    isEmailVerificado,
     login,
     register,
     logout,
@@ -159,5 +229,8 @@ export const useAuthStore = defineStore("auth", () => {
     updateEstado,
     updateUbicacion,
     updatePerfil,
+    requestPasswordReset,
+    resetPassword,
+    resendVerification,
   };
 });

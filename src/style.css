@@ -1,30 +1,101 @@
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap");
-
+/* ══════════════════════════════════════════════════════════
+   FUENTES Y FRAMEWORK
+   ══════════════════════════════════════════════════════════ */
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap");
 @import "tailwindcss";
 
+/* ══════════════════════════════════════════════════════════
+   DESIGN TOKENS
+   Un solo lugar para colores, tipografía y radios. Cambiar la
+   marca del sistema es cambiar estas variables, nada más.
+   ══════════════════════════════════════════════════════════ */
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  /* Marca — rojo motorizado, un punto más cálido que el rojo genérico */
+  --color-brand-50: #fef2f0;
+  --color-brand-100: #fce1db;
+  --color-brand-200: #f8c1b5;
+  --color-brand-300: #f2977f;
+  --color-brand-400: #ea6c50;
+  --color-brand-500: #e1442a;
+  --color-brand-600: #c8371f;
+  --color-brand-700: #a32c18;
+  --color-brand-800: #7a2212;
+  --color-brand-900: #52170c;
+
+  /* Neutros propios — más cálidos que el gray por defecto */
+  --color-ink: #14181f;
+  --color-ink-soft: #6b7280;
+  --color-ink-faint: #9aa1ad;
+  --color-bg: #f5f6f8;
+  --color-surface: #ffffff;
+  --color-line: #e8eaed;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESET Y BASE
+   ══════════════════════════════════════════════════════════ */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  background: #f9fafb;
-  color: #111827;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-ink);
   min-height: 100dvh;
   margin: 0;
   overflow-x: hidden;
 }
 
-button {
-  font-family: inherit;
-}
+button,
 input,
 select,
 textarea {
   font-family: inherit;
 }
 
+/* ══════════════════════════════════════════════════════════
+   ACCESIBILIDAD — FOCUS
+   Outline global para navegación con teclado. Los controles que
+   ya tienen su propio estado de foco (.field-input) lo excluyen
+   más abajo para no mostrar doble borde al enfocarse.
+   ══════════════════════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.field-input:focus-visible,
+.btn:focus-visible,
+.btn-lg:focus-visible,
+.btn-primary:focus-visible,
+.btn-outline:focus-visible {
+  outline: none;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -35,9 +106,199 @@ textarea {
   border-radius: 10px;
 }
 
+/* ══════════════════════════════════════════════════════════
+   LIBRERÍAS EXTERNAS — overrides puntuales
+   ══════════════════════════════════════════════════════════ */
 .leaflet-pane,
 .leaflet-control,
 .leaflet-top,
 .leaflet-bottom {
   z-index: 10 !important;
+}
+
+/* ══════════════════════════════════════════════════════════
+   COMPONENTES COMPARTIDOS
+   Clases reutilizables para no repetir strings de utilidades
+   en cada vista — mismo look & feel, un solo lugar para ajustar.
+   ══════════════════════════════════════════════════════════ */
+@layer components {
+  /* ── Contenedores ─────────────────────────────────────── */
+  .app-shell {
+    @apply min-h-screen flex flex-col lg:pl-64;
+    background: var(--color-bg);
+  }
+
+  .app-header {
+    @apply bg-white border-b sticky top-0 z-30 px-4 sm:px-6 lg:px-8 py-4 shrink-0;
+    border-color: var(--color-line);
+  }
+
+  .app-container {
+    @apply max-w-6xl mx-auto w-full;
+  }
+
+  .back-btn {
+    @apply w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center
+           border-none cursor-pointer hover:bg-gray-200 transition-colors shrink-0 text-ink;
+  }
+
+  /* ── Sidebar de escritorio ────────────────────────────── */
+  .sidebar {
+    @apply hidden lg:flex fixed inset-y-0 left-0 z-40 w-64 flex-col bg-white border-r;
+    border-color: var(--color-line);
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-[13.5px]
+           border-none bg-transparent cursor-pointer transition-colors duration-150 w-full text-left;
+    color: var(--color-ink-soft);
+  }
+  .sidebar-link:hover {
+    background: var(--color-brand-50);
+    color: var(--color-brand-600);
+  }
+  .sidebar-link--active {
+    background: var(--color-brand-50);
+    color: var(--color-brand-600);
+  }
+
+  /* ── Tarjetas ──────────────────────────────────────────── */
+  .card {
+    @apply bg-white rounded-2xl border shadow-sm;
+    border-color: var(--color-line);
+  }
+
+  .card-interactive {
+    @apply bg-white rounded-2xl border shadow-sm cursor-pointer transition-all duration-150 active:scale-[0.98];
+    border-color: var(--color-line);
+  }
+  .card-interactive:hover {
+    border-color: var(--color-brand-200);
+    box-shadow: 0 6px 20px -8px rgba(225, 68, 42, 0.18);
+  }
+
+  /* ── Formularios ───────────────────────────────────────── */
+  .field-label {
+    @apply block text-[11px] font-black uppercase tracking-widest mb-1.5;
+    color: var(--color-ink-faint);
+  }
+
+  .field-input {
+    @apply w-full px-4 py-3 rounded-2xl border-2 bg-gray-50 text-[15px] outline-none
+           transition-all duration-200;
+    color: var(--color-ink);
+    border-color: #f0f1f3;
+  }
+  .field-input::placeholder {
+    color: #c7cbd2;
+  }
+  .field-input:focus {
+    background: white;
+    border-color: var(--color-brand-500);
+    box-shadow: 0 0 0 4px rgba(225, 68, 42, 0.09);
+  }
+
+  /* Botón "ojito" para mostrar/ocultar contraseña, posicionado
+     dentro de un .field-input mediante un wrapper `relative` */
+  .field-input-icon-btn {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg
+           flex items-center justify-center border-none bg-transparent
+           cursor-pointer transition-colors;
+    color: var(--color-ink-faint);
+  }
+  .field-input-icon-btn:hover {
+    color: var(--color-ink-soft);
+    background: #f0f1f3;
+  }
+
+  /* ── Botones ───────────────────────────────────────────── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold
+           border-none cursor-pointer transition-all duration-200 select-none
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-lg {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold
+           border-none cursor-pointer transition-all duration-200 select-none
+           disabled:opacity-50 disabled:cursor-not-allowed
+           py-3.5 text-[15px] font-black active:scale-[0.98] w-full;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold
+           border-none cursor-pointer transition-all duration-200 select-none
+           disabled:opacity-50 disabled:cursor-not-allowed
+           py-3.5 text-[15px] font-black active:scale-[0.98] w-full text-white;
+    background: var(--color-brand-600);
+    box-shadow: 0 10px 24px -10px rgba(200, 55, 31, 0.55);
+  }
+  .btn-primary:hover:not(:disabled) {
+    background: var(--color-brand-700);
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold
+           border-none cursor-pointer transition-all duration-200 select-none
+           disabled:opacity-50 disabled:cursor-not-allowed
+           py-3 px-5 text-[13.5px] border-2 bg-white;
+    color: var(--color-ink-soft);
+    border-color: #e5e7eb;
+  }
+  .btn-outline:hover:not(:disabled) {
+    border-color: #d1d5db;
+  }
+
+  .spinner {
+    @apply w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0;
+  }
+
+  /* ── Insignias / badges ────────────────────────────────── */
+  .badge {
+    @apply inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0;
+  }
+
+  .icon-tile {
+    @apply w-9 h-9 rounded-xl flex items-center justify-center shrink-0;
+  }
+
+  /* ── Cifras ────────────────────────────────────────────── */
+  /* Mono tabular para lectura rápida de montos y códigos */
+  .amount {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    @apply font-bold;
+  }
+
+  .order-code {
+    font-family: var(--font-mono);
+    @apply font-bold tracking-tight;
+  }
+
+  /* ── Estados vacíos ────────────────────────────────────── */
+  .empty-state {
+    @apply flex flex-col items-center py-16 gap-3 text-center;
+    color: var(--color-ink-faint);
+  }
+  .empty-state-icon {
+    @apply w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
+   Firma visual: línea de ruta punteada para el timeline de
+   despacho — evoca el trayecto real del motorizado.
+   ══════════════════════════════════════════════════════════ */
+.route-line {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--color-line) 0,
+    var(--color-line) 6px,
+    transparent 6px,
+    transparent 12px
+  );
+}
+.route-line--done {
+  background-image: none;
+  background-color: var(--color-brand-600);
 }

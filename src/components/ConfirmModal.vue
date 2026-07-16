@@ -12,29 +12,24 @@
 
                     <div class="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center"
                         :class="variantClasses.iconBg">
-                        <span class="text-2xl">{{ icon }}</span>
+                        <component :is="icon" class="w-7 h-7" :class="variantClasses.iconColor" />
                     </div>
 
-                    <h3 class="font-black text-[18px] sm:text-[19px] text-gray-900 m-0 mb-2">
+                    <h3 class="font-black text-[18px] sm:text-[19px] m-0 mb-2" style="color: var(--color-ink)">
                         {{ title }}
                     </h3>
-                    <p class="text-[13.5px] text-gray-400 m-0 mb-6 leading-relaxed">
+                    <p class="text-[13.5px] m-0 mb-6 leading-relaxed" style="color: var(--color-ink-soft)">
                         {{ message }}
                     </p>
 
                     <div class="flex gap-3">
-                        <button @click="$emit('update:modelValue', false)" :disabled="loading" class="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600
-                                   font-semibold text-[13.5px] cursor-pointer bg-white
-                                   hover:border-gray-300 transition-all duration-150
-                                   disabled:opacity-50">
+                        <button @click="$emit('update:modelValue', false)" :disabled="loading"
+                            class="btn-outline flex-1">
                             {{ cancelLabel }}
                         </button>
-                        <button @click="$emit('confirm')" :disabled="loading" class="flex-1 py-3 rounded-2xl text-white font-bold text-[13.5px]
-                                   cursor-pointer border-none transition-all duration-150
-                                   disabled:opacity-50 flex items-center justify-center gap-2"
-                            :class="variantClasses.confirmBtn">
-                            <span v-if="loading"
-                                class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <button @click="$emit('confirm')" :disabled="loading"
+                            class="btn flex-1 py-3 text-[13.5px] text-white" :class="variantClasses.confirmBtn">
+                            <span v-if="loading" class="spinner" />
                             {{ loading ? loadingLabel : confirmLabel }}
                         </button>
                     </div>
@@ -46,6 +41,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import {
+    ExclamationTriangleIcon,
+    ExclamationCircleIcon,
+    CheckCircleIcon,
+    InformationCircleIcon,
+} from '@heroicons/vue/24/solid'
 
 const props = defineProps<{
     modelValue: boolean
@@ -68,16 +69,21 @@ const cancelLabel = computed(() => props.cancelLabel ?? 'Cancelar')
 const loadingLabel = computed(() => props.loadingLabel ?? 'Procesando...')
 
 const icon = computed(() => {
-    const map = { danger: '⚠️', warning: '❗', success: '✅', info: 'ℹ️' }
+    const map = {
+        danger: ExclamationTriangleIcon,
+        warning: ExclamationCircleIcon,
+        success: CheckCircleIcon,
+        info: InformationCircleIcon,
+    }
     return map[props.variant ?? 'warning']
 })
 
 const variantClasses = computed(() => {
     const map = {
-        danger: { iconBg: 'bg-red-50', confirmBtn: 'bg-red-600 hover:bg-red-700' },
-        warning: { iconBg: 'bg-amber-50', confirmBtn: 'bg-amber-500 hover:bg-amber-600' },
-        success: { iconBg: 'bg-green-50', confirmBtn: 'bg-green-600 hover:bg-green-700' },
-        info: { iconBg: 'bg-blue-50', confirmBtn: 'bg-blue-600 hover:bg-blue-700' },
+        danger: { iconBg: 'bg-red-50', iconColor: 'text-red-600', confirmBtn: 'bg-red-600 hover:bg-red-700' },
+        warning: { iconBg: 'bg-amber-50', iconColor: 'text-amber-500', confirmBtn: 'bg-amber-500 hover:bg-amber-600' },
+        success: { iconBg: 'bg-green-50', iconColor: 'text-green-600', confirmBtn: 'bg-green-600 hover:bg-green-700' },
+        info: { iconBg: 'bg-blue-50', iconColor: 'text-blue-600', confirmBtn: 'bg-blue-600 hover:bg-blue-700' },
     }
     return map[props.variant ?? 'warning']
 })
