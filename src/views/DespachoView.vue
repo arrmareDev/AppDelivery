@@ -609,6 +609,17 @@ async function executeEntrega() {
     loadingAccion.value = false
 }
 
+// ↓ NUEVA — faltaba esta función. El botón "Confirmar entrega" la
+// llama cuando el pedido es contraentrega (efectivo/Yape), para abrir
+// el modal de cobro con el monto del pedido precargado como sugerencia
+// editable (así el motorizado no tiene que escribirlo desde cero
+// cuando el cliente paga el monto exacto).
+function abrirModalCobro() {
+    if (!despacho.value) return
+    modalCobro.monto = Number(despacho.value.order?.total ?? 0)
+    modalCobro.show = true
+}
+
 async function confirmarCobro() {
     if (!despacho.value) return
 
@@ -630,5 +641,4 @@ async function confirmarCobro() {
     }
     loadingAccion.value = false
 }
-
 </script>
