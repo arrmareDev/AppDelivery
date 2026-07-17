@@ -1,5 +1,7 @@
+/* ══════════════════════════════════════════════════════════
+   FUENTES Y FRAMEWORK
+   ══════════════════════════════════════════════════════════ */
 @import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap");
-
 @import "tailwindcss";
 
 /* ══════════════════════════════════════════════════════════
@@ -32,6 +34,9 @@
   --color-line: #e8eaed;
 }
 
+/* ══════════════════════════════════════════════════════════
+   RESET Y BASE
+   ══════════════════════════════════════════════════════════ */
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -50,22 +55,34 @@ body {
   overflow-x: hidden;
 }
 
-button {
-  font-family: inherit;
-}
+button,
 input,
 select,
 textarea {
   font-family: inherit;
 }
 
-/* Foco visible consistente para navegación con teclado */
+/* ══════════════════════════════════════════════════════════
+   ACCESIBILIDAD — FOCUS
+   Outline global para navegación con teclado. Los controles que
+   ya tienen su propio estado de foco (.field-input) lo excluyen
+   más abajo para no mostrar doble borde al enfocarse.
+   ══════════════════════════════════════════════════════════ */
 :focus-visible {
   outline: 2px solid var(--color-brand-500);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
+.field-input:focus-visible,
+.btn:focus-visible,
+.btn-lg:focus-visible,
+.btn-primary:focus-visible,
+.btn-outline:focus-visible {
+  outline: none;
+}
+
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -76,6 +93,9 @@ textarea {
   }
 }
 
+/* ══════════════════════════════════════════════════════════
+   SCROLLBAR
+   ══════════════════════════════════════════════════════════ */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -86,6 +106,9 @@ textarea {
   border-radius: 10px;
 }
 
+/* ══════════════════════════════════════════════════════════
+   LIBRERÍAS EXTERNAS — overrides puntuales
+   ══════════════════════════════════════════════════════════ */
 .leaflet-pane,
 .leaflet-control,
 .leaflet-top,
@@ -99,7 +122,7 @@ textarea {
    en cada vista — mismo look & feel, un solo lugar para ajustar.
    ══════════════════════════════════════════════════════════ */
 @layer components {
-  /* Contenedores */
+  /* ── Contenedores ─────────────────────────────────────── */
   .app-shell {
     @apply min-h-screen flex flex-col lg:pl-64;
     background: var(--color-bg);
@@ -119,7 +142,7 @@ textarea {
            border-none cursor-pointer hover:bg-gray-200 transition-colors shrink-0 text-ink;
   }
 
-  /* Sidebar de escritorio */
+  /* ── Sidebar de escritorio ────────────────────────────── */
   .sidebar {
     @apply hidden lg:flex fixed inset-y-0 left-0 z-40 w-64 flex-col bg-white border-r;
     border-color: var(--color-line);
@@ -139,7 +162,7 @@ textarea {
     color: var(--color-brand-600);
   }
 
-  /* Tarjetas */
+  /* ── Tarjetas ──────────────────────────────────────────── */
   .card {
     @apply bg-white rounded-2xl border shadow-sm;
     border-color: var(--color-line);
@@ -154,7 +177,7 @@ textarea {
     box-shadow: 0 6px 20px -8px rgba(225, 68, 42, 0.18);
   }
 
-  /* Formularios */
+  /* ── Formularios ───────────────────────────────────────── */
   .field-label {
     @apply block text-[11px] font-black uppercase tracking-widest mb-1.5;
     color: var(--color-ink-faint);
@@ -175,7 +198,20 @@ textarea {
     box-shadow: 0 0 0 4px rgba(225, 68, 42, 0.09);
   }
 
-  /* Botones */
+  /* Botón "ojito" para mostrar/ocultar contraseña, posicionado
+     dentro de un .field-input mediante un wrapper `relative` */
+  .field-input-icon-btn {
+    @apply absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg
+           flex items-center justify-center border-none bg-transparent
+           cursor-pointer transition-colors;
+    color: var(--color-ink-faint);
+  }
+  .field-input-icon-btn:hover {
+    color: var(--color-ink-soft);
+    background: #f0f1f3;
+  }
+
+  /* ── Botones ───────────────────────────────────────────── */
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold
            border-none cursor-pointer transition-all duration-200 select-none
@@ -217,7 +253,7 @@ textarea {
     @apply w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin shrink-0;
   }
 
-  /* Insignias / badges */
+  /* ── Insignias / badges ────────────────────────────────── */
   .badge {
     @apply inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0;
   }
@@ -226,7 +262,8 @@ textarea {
     @apply w-9 h-9 rounded-xl flex items-center justify-center shrink-0;
   }
 
-  /* Cifras — mono tabular para lectura rápida de montos y códigos */
+  /* ── Cifras ────────────────────────────────────────────── */
+  /* Mono tabular para lectura rápida de montos y códigos */
   .amount {
     font-family: var(--font-mono);
     font-variant-numeric: tabular-nums;
@@ -238,7 +275,7 @@ textarea {
     @apply font-bold tracking-tight;
   }
 
-  /* Vacíos */
+  /* ── Estados vacíos ────────────────────────────────────── */
   .empty-state {
     @apply flex flex-col items-center py-16 gap-3 text-center;
     color: var(--color-ink-faint);
