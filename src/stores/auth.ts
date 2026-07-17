@@ -13,10 +13,17 @@ export interface Motorizado {
   activo: boolean;
   lat: number | null;
   lng: number | null;
-  // Verificación de propiedad del correo (distinta de `verificado`,
-  // que es la aprobación del administrador). Opcional para no romper
-  // nada mientras el backend no la envíe todavía.
   email_verificado?: boolean;
+  dni?: string;
+  nombres?: string;
+  apellidos?: string;
+  fecha_nacimiento?: string;
+  placa?: string;
+  marca_vehiculo?: string;
+  modelo_vehiculo?: string;
+  anio_vehiculo?: number;
+  foto_vehiculo?: string | null;
+  soat_numero?: string | null;
 }
 
 export const useAuthStore = defineStore("auth", () => {
@@ -57,14 +64,32 @@ export const useAuthStore = defineStore("auth", () => {
   }
 
   async function register(form: {
-    nombre: string;
+    dni: string;
+    nombres: string;
+    apellidos: string;
+    fecha_nacimiento: string;
     telefono: string;
     email: string;
     password: string;
+    placa: string;
+    marca_vehiculo: string;
+    modelo_vehiculo: string;
+    anio_vehiculo: number;
+    foto_vehiculo: File;
+    soat_numero?: string;
   }): Promise<{ ok: boolean; message: string }> {
     loading.value = true;
     try {
-      const { data } = await api.post("/motorizado/auth/register", form);
+      const formData = new FormData();
+      Object.entries(form).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value as any);
+        }
+      });
+
+      const { data } = await api.post("/motorizado/auth/register", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       token.value = data.data.token;
       user.value = data.data.motorizado;
       localStorage.setItem("motorizado_token", data.data.token);
