@@ -24,6 +24,7 @@ export interface DespachoItem {
     delivery_fee?: number;
     total: number;
     metodo_pago?: string | null;
+    pagado?: boolean | null;
     lat?: number | null;
     lng?: number | null;
     note?: string | null;
