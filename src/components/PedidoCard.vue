@@ -1,7 +1,8 @@
 <template>
-    <div class="card overflow-hidden transition-all duration-200"
+    <div class="card overflow-hidden transition-all duration-200 cursor-pointer active:scale-[0.98]"
         :class="aceptando ? 'ring-2' : 'hover:border-[color:var(--color-brand-200)]'"
-        :style="aceptando ? 'border-color: var(--color-brand-300); box-shadow: 0 0 0 2px rgba(225,68,42,0.12)' : ''">
+        :style="aceptando ? 'border-color: var(--color-brand-300); box-shadow: 0 0 0 2px rgba(225,68,42,0.12)' : ''"
+        @click="$emit('verDetalle')">
 
         <div class="p-4">
 
@@ -18,9 +19,9 @@
                 </div>
             </div>
 
-            <!-- Badge restaurante -->
-            <span v-if="despacho.restaurant" class="badge bg-purple-50 text-purple-700 border-purple-200 mb-1.5">
-                {{ despacho.restaurant }}
+            <!-- Badge negocio -->
+            <span v-if="despacho.negocio" class="badge bg-purple-50 text-purple-700 border-purple-200 mb-1.5">
+                {{ despacho.negocio }}
             </span>
 
             <!-- Nombre cliente -->
@@ -71,31 +72,27 @@
             </p>
         </div>
 
-        <!-- Botón aceptar -->
-        <button @click.stop="$emit('aceptar')" :disabled="aceptando" class="btn-accept w-full py-3.5 text-white font-black text-sm
-                   uppercase tracking-wide border-none cursor-pointer
-                   active:scale-[0.99] disabled:opacity-60 disabled:cursor-not-allowed
-                   transition-all duration-150
-                   flex items-center justify-center gap-2">
-            <span v-if="aceptando" class="spinner" />
-            <BoltIcon v-else class="w-4 h-4" />
-            {{ aceptando ? 'Aceptando...' : 'Aceptar pedido' }}
-        </button>
+        <!-- Toca para ver detalle -->
+        <div class="w-full py-3 text-center text-sm font-black border-t border-gray-100"
+            :class="deshabilitado ? 'text-gray-400' : ''" :style="!deshabilitado ? 'color: var(--color-brand-600)' : ''">
+            {{ deshabilitado ? 'Límite de pedidos alcanzado' : 'Toca para ver el detalle →' }}
+        </div>
     </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { MapPinIcon, DevicePhoneMobileIcon, BanknotesIcon } from '@heroicons/vue/24/outline'
-import { BoltIcon } from '@heroicons/vue/24/solid'
 import type { DespachoItem } from '../stores/despacho'
 
 const props = defineProps<{
     despacho: DespachoItem
     aceptando: boolean
+    deshabilitado?: boolean
 }>()
 
-defineEmits<{ aceptar: [] }>()
+defineEmits<{ verDetalle: [] }>()
+
 
 // Dirección sin coma suelta cuando district es null
 const direccion = computed(() => {
@@ -119,13 +116,3 @@ const tiempoTranscurrido = computed(() => {
     return `hace ${mins} mins`
 })
 </script>
-
-<style scoped>
-.btn-accept {
-    background: var(--color-brand-600);
-}
-
-.btn-accept:hover:not(:disabled) {
-    background: var(--color-brand-700);
-}
-</style>

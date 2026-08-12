@@ -70,10 +70,10 @@
           <option value="anticipado">Pago anticipado</option>
         </select>
 
-        <select v-if="restaurantesDisponibles.length > 1" v-model="restauranteFiltro"
+        <select v-if="negociosDisponibles.length > 1" v-model="negocioFiltro"
           class="field-input w-auto py-2 text-[12.5px] font-semibold">
           <option value="todos">Todos los negocios</option>
-          <option v-for="r in restaurantesDisponibles" :key="r" :value="r">{{ r }}</option>
+          <option v-for="r in negociosDisponibles" :key="r" :value="r">{{ r }}</option>
         </select>
       </div>
     </div>
@@ -109,8 +109,8 @@
                 <span class="font-bold text-[13px] truncate" style="color: var(--color-ink)">
                   {{ d.order?.client_name }}
                 </span>
-                <span v-if="d.restaurant" class="badge bg-purple-50 text-purple-700 border-purple-200">
-                  {{ d.restaurant }}
+                <span v-if="d.negocio" class="badge bg-purple-50 text-purple-700 border-purple-200">
+                  {{ d.negocio }}
                 </span>
               </div>
               <div class="flex items-center gap-2 mt-0.5">
@@ -185,8 +185,8 @@
                       <span class="order-code text-[11px] text-gray-500">
                         #{{ detalle.item.order_id }}
                       </span>
-                      <span v-if="detalle.item.restaurant" class="badge bg-purple-50 text-purple-700 border-purple-200">
-                        {{ detalle.item.restaurant }}
+                      <span v-if="detalle.item.negocio" class="badge bg-purple-50 text-purple-700 border-purple-200">
+                        {{ detalle.item.negocio }}
                       </span>
                     </div>
                     <h3 class="font-black text-[18px] m-0" style="color: var(--color-ink)">
@@ -407,11 +407,11 @@ const rangoOpciones = [
 
 const rango = ref<'hoy' | 'semana' | 'mes' | 'todo'>('todo')
 const metodoFiltro = ref('todos')
-const restauranteFiltro = ref('todos')
+const negocioFiltro = ref('todos')
 
-const restaurantesDisponibles = computed(() => {
+const negociosDisponibles = computed(() => {
   const set = new Set<string>()
-  despachos.historial.forEach(d => { if (d.restaurant) set.add(d.restaurant) })
+  despachos.historial.forEach(d => { if (d.negocio) set.add(d.negocio) })
   return Array.from(set)
 })
 
@@ -429,7 +429,7 @@ const historialFiltrado = computed(() => {
     if (rango.value === 'mes' && fecha < inicioMes) return false
 
     if (metodoFiltro.value !== 'todos' && d.order?.metodo_pago !== metodoFiltro.value) return false
-    if (restauranteFiltro.value !== 'todos' && d.restaurant !== restauranteFiltro.value) return false
+    if (negocioFiltro.value !== 'todos' && d.negocio !== negocioFiltro.value) return false
 
     return true
   })

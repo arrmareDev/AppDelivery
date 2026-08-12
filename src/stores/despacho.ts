@@ -1,10 +1,10 @@
 import { defineStore } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import api from "../api/axios";
 
 export interface DespachoItem {
   id: number;
-  restaurant?: string;
+  negocio?: string;
   order_id: number;
   estado: string;
   comision_motorizado: number;
@@ -42,13 +42,26 @@ export interface DespachoItem {
   } | null;
 }
 
+// Debe coincidir con MAX_DESPACHOS_SIMULTANEOS del backend (Central).
+// El backend es quien de verdad lo hace cumplir — esto es solo para
+// no dejar que la persona intente aceptar un 4to de más y se lleve
+// un error recién al final.
+export const MAX_DESPACHOS_SIMULTANEOS = 3;
+
 export const useDespachosStore = defineStore("despachos", () => {
   const disponibles = ref<DespachoItem[]>([]);
-  const activo = ref<DespachoItem | null>(null);
+  const activos = ref<DespachoItem[]>([]);
   const historial = ref<DespachoItem[]>([]);
   const loading = ref(false);
   const totalHoy = ref(0);
   const nuevoPedido = ref(false); // flag para alerta sonido
+
+  const puedeAceptarMas = computed(
+    () => activos.value.length < MAX_DESPACHOS_SIMULTANEOS,
+  );
+  const cuposDisponibles = computed(() =>
+    Math.max(0, MAX_DESPACHOS_SIMULTANEOS - activos.value.length),
+  );
 
   async function fetchDisponibles() {
     try {
@@ -57,10 +70,10 @@ export const useDespachosStore = defineStore("despachos", () => {
     } catch {}
   }
 
-  async function fetchActivo() {
+  async function fetchActivos() {
     try {
-      const { data } = await api.get("/motorizado/despachos/activo");
-      activo.value = data.data;
+      const { data } = await api.get("/motorizado/despachos/activos");
+      activos.value = data.data;
     } catch {}
   }
 
@@ -81,8 +94,12 @@ export const useDespachosStore = defineStore("despachos", () => {
       const { data } = await api.post(
         `/motorizado/despachos/${despachoId}/aceptar`,
       );
-      activo.value = data.data;
-      // Quitar de disponibles
+      // Se agrega a la lista de activos, no la reemplaza — puede haber
+      // otros 1 o 2 pedidos ya en curso.
+      const idx = activos.value.findIndex((d) => d.id === data.data.id);
+      if (idx !== -1) activos.value[idx] = data.data;
+      else activos.value.push(data.data);
+
       disponibles.value = disponibles.value.filter((d) => d.id !== despachoId);
       return true;
     } catch (e: any) {
@@ -103,10 +120,17 @@ export const useDespachosStore = defineStore("despachos", () => {
         `/motorizado/despachos/${despachoId}/estado`,
         { estado, nota, monto_cobrado: montoCobrado },
       );
-      activo.value = estado === "entregado" ? null : data.data;
+
       if (estado === "entregado") {
+        // Sale de la lista de activos — los otros 1 o 2 pedidos en
+        // curso siguen ahí, intactos.
+        activos.value = activos.value.filter((d) => d.id !== despachoId);
         await fetchHistorial();
+      } else {
+        const idx = activos.value.findIndex((d) => d.id === despachoId);
+        if (idx !== -1) activos.value[idx] = data.data;
       }
+
       return true;
     } catch {
       return false;
@@ -132,13 +156,15 @@ export const useDespachosStore = defineStore("despachos", () => {
 
   return {
     disponibles,
-    activo,
+    activos,
     historial,
     loading,
     totalHoy,
     nuevoPedido,
+    puedeAceptarMas,
+    cuposDisponibles,
     fetchDisponibles,
-    fetchActivo,
+    fetchActivos,
     fetchHistorial,
     aceptar,
     updateEstado,

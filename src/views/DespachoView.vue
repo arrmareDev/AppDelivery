@@ -82,10 +82,10 @@
                     <!-- INFO CLIENTE -->
                     <div class="card p-4 flex flex-col gap-3">
 
-                        <!-- Badge restaurante -->
-                        <span v-if="despacho.restaurant"
+                        <!-- Badge negocio -->
+                        <span v-if="despacho.negocio"
                             class="badge bg-purple-50 text-purple-700 border-purple-200 self-start">
-                            {{ despacho.restaurant }}
+                            {{ despacho.negocio }}
                         </span>
 
                         <!-- Nombre cliente -->
@@ -276,7 +276,7 @@
 
         <!-- ══ MODALES ══ -->
         <ConfirmModal v-model="confirmRecojo.show" title="¿Confirmar recojo en el local?"
-            message="Confirma que ya recogiste el pedido en el restaurante y vas en camino hacia el cliente."
+            message="Confirma que ya recogiste el pedido en el negocio y vas en camino hacia el cliente."
             variant="warning" confirm-label="Sí, ya lo recogí" :loading="loadingAccion" @confirm="executeRecojo" />
 
         <ConfirmModal v-model="confirmEntrega.show" title="¿Confirmar entrega?"
@@ -537,11 +537,11 @@ onMounted(async () => {
     const id = Number(route.params.id)
     loading.value = true
 
-    if (despachos.activo?.id === id) {
-        despacho.value = despachos.activo
+    if (despachos.activos.some(d => d.id === id)) {
+        despacho.value = despachos.activos.find(d => d.id === id) ?? null
     } else {
-        await despachos.fetchActivo()
-        despacho.value = despachos.activo
+        await despachos.fetchActivos()
+        despacho.value = despachos.activos.find(d => d.id === id) ?? null
     }
     loading.value = false
 
