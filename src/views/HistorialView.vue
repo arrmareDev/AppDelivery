@@ -149,6 +149,17 @@
           </div>
         </div>
       </div>
+
+      <!-- Cargar más -->
+      <div v-if="despachos.hayMasHistorial" class="flex justify-center mt-4">
+        <button @click="despachos.loadMoreHistorial()" :disabled="despachos.loadingMore" class="px-5 py-2.5 rounded-2xl border-2 border-gray-200 bg-white text-gray-600
+                 font-bold text-[13px] cursor-pointer disabled:opacity-60
+                 hover:border-gray-300 transition-all duration-150 flex items-center gap-2">
+          <span v-if="despachos.loadingMore"
+            class="w-3.5 h-3.5 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
+          {{ despachos.loadingMore ? 'Cargando...' : 'Cargar más' }}
+        </button>
+      </div>
     </div>
 
     <!-- Nav -->

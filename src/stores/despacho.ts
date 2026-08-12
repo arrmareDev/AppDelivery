@@ -43,6 +43,13 @@ export interface DespachoItem {
   } | null;
 }
 
+export interface PaginationMeta {
+  current_page: number;
+  last_page: number;
+  total: number;
+  per_page: number;
+}
+
 // Debe coincidir con MAX_DESPACHOS_SIMULTANEOS del backend (Central).
 // El backend es quien de verdad lo hace cumplir — esto es solo para
 // no dejar que la persona intente aceptar un 4to de más y se lleve
@@ -53,8 +60,9 @@ export const useDespachosStore = defineStore("despachos", () => {
   const disponibles = ref<DespachoItem[]>([]);
   const activos = ref<DespachoItem[]>([]);
   const historial = ref<DespachoItem[]>([]);
+  const historialMeta = ref<PaginationMeta | null>(null);
   const loading = ref(false);
-  const totalHoy = ref(0);
+  const loadingMore = ref(false);
   const nuevoPedido = ref(false); // flag para alerta sonido
 
   const puedeAceptarMas = computed(
@@ -62,6 +70,11 @@ export const useDespachosStore = defineStore("despachos", () => {
   );
   const cuposDisponibles = computed(() =>
     Math.max(0, MAX_DESPACHOS_SIMULTANEOS - activos.value.length),
+  );
+  const hayMasHistorial = computed(
+    () =>
+      !!historialMeta.value &&
+      historialMeta.value.current_page < historialMeta.value.last_page,
   );
 
   async function fetchDisponibles() {
@@ -82,11 +95,27 @@ export const useDespachosStore = defineStore("despachos", () => {
     loading.value = true;
     try {
       const { data } = await api.get("/motorizado/historial");
-      historial.value = data.data.despachos ?? data.data;
-      totalHoy.value = data.data.total_hoy ?? 0;
+      historial.value = data.data.data;
+      historialMeta.value = data.data.meta;
     } catch {
     } finally {
       loading.value = false;
+    }
+  }
+
+  async function loadMoreHistorial() {
+    if (!hayMasHistorial.value || loadingMore.value) return;
+    loadingMore.value = true;
+    try {
+      const nextPage = (historialMeta.value?.current_page ?? 1) + 1;
+      const { data } = await api.get("/motorizado/historial", {
+        params: { page: nextPage },
+      });
+      historial.value.push(...data.data.data);
+      historialMeta.value = data.data.meta;
+    } catch {
+    } finally {
+      loadingMore.value = false;
     }
   }
 
@@ -123,8 +152,6 @@ export const useDespachosStore = defineStore("despachos", () => {
       );
 
       if (estado === "entregado") {
-        // Sale de la lista de activos — los otros 1 o 2 pedidos en
-        // curso siguen ahí, intactos.
         activos.value = activos.value.filter((d) => d.id !== despachoId);
         await fetchHistorial();
       } else {
@@ -159,14 +186,17 @@ export const useDespachosStore = defineStore("despachos", () => {
     disponibles,
     activos,
     historial,
+    historialMeta,
     loading,
-    totalHoy,
+    loadingMore,
+    hayMasHistorial,
     nuevoPedido,
     puedeAceptarMas,
     cuposDisponibles,
     fetchDisponibles,
     fetchActivos,
     fetchHistorial,
+    loadMoreHistorial,
     aceptar,
     updateEstado,
     addDisponible,
