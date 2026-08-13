@@ -57,6 +57,11 @@
                     </div>
                 </button>
             </Transition>
+
+            <p v-if="pushError" class="app-container mt-2 text-[12px] text-red-600 bg-red-50 border border-red-200
+                   rounded-xl px-3 py-2">
+                {{ pushError }}
+            </p>
         </header>
 
         <!-- ══ PEDIDOS ACTIVOS (hasta 3 a la vez) ══ -->
@@ -180,6 +185,7 @@ const echo = useEcho()
 const pushSupported = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
 const pushPermission = ref<NotificationPermission>(pushSupported ? Notification.permission : 'denied')
 const enablingPush = ref(false)
+const pushError = ref('')
 
 // El navegador entrega la llave VAPID en base64url — PushManager necesita
 // un Uint8Array, no el string tal cual.
@@ -193,10 +199,14 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
 async function enablePush() {
     if (!pushSupported || enablingPush.value) return
     enablingPush.value = true
+    pushError.value = ''
     try {
         const permission = await Notification.requestPermission()
         pushPermission.value = permission
-        if (permission !== 'granted') return
+        if (permission !== 'granted') {
+            pushError.value = 'No diste el permiso de notificaciones — sin eso no podemos avisarte.'
+            return
+        }
 
         // El service worker ya se registra solo (vite-plugin-pwa) — acá
         // solo esperamos a que esté listo para poder suscribirnos.
@@ -204,7 +214,10 @@ async function enablePush() {
 
         const { data } = await api.get('/vapid-public-key')
         const publicKey = data.data?.public_key
-        if (!publicKey) return
+        if (!publicKey) {
+            pushError.value = 'El servidor no devolvió la llave necesaria (vapid-public-key vacío).'
+            return
+        }
 
         const subscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
@@ -212,9 +225,9 @@ async function enablePush() {
         })
 
         await api.post('/motorizado/push/subscribe', subscription.toJSON())
-    } catch {
-        // Canceló el permiso o algo falló — el botón sigue visible
-        // para reintentar, no rompe nada más.
+    } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        pushError.value = `No se pudo activar: ${msg}`
     } finally {
         enablingPush.value = false
     }
