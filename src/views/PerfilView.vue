@@ -30,7 +30,7 @@
                 </div>
                 <div class="flex-1 min-w-0 lg:w-full lg:mt-3">
                     <p class="font-black text-[17px] m-0 truncate" style="color: var(--color-ink)">{{ auth.user?.nombre
-                        }}</p>
+                    }}</p>
                     <p class="text-xs mt-0.5 truncate" style="color: var(--color-ink-faint)">{{ auth.user?.email }}</p>
                     <div class="flex items-center gap-1.5 mt-2">
                         <span v-if="auth.user?.verificado" class="badge bg-green-50 text-green-700 border-green-200">
@@ -58,7 +58,8 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                             <label class="field-label">Teléfono</label>
-                            <input v-model="datosForm.telefono" required class="field-input" />
+                            <input :value="datosForm.telefono" @input="onTelefonoInput" required type="tel"
+                                inputmode="numeric" maxlength="9" class="field-input" />
                         </div>
                         <div>
                             <label class="field-label">Correo electrónico</label>
@@ -94,12 +95,12 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div>
                             <label class="field-label">Nueva contraseña</label>
-                            <input v-model="passwordForm.nueva" type="password" required minlength="6"
+                            <input v-model="passwordForm.nueva" type="password" required minlength="8"
                                 placeholder="Mínimo 6 caracteres" class="field-input" />
                         </div>
                         <div>
                             <label class="field-label">Confirmar contraseña</label>
-                            <input v-model="passwordForm.confirmacion" type="password" required minlength="6"
+                            <input v-model="passwordForm.confirmacion" type="password" required minlength="8"
                                 placeholder="Repite la contraseña" class="field-input" />
                         </div>
                     </div>
@@ -176,6 +177,13 @@ const datosCambiaron = computed(() =>
 function askGuardarDatos() {
     datosError.value = ''
     confirmDatos.show = true
+}
+
+function onTelefonoInput(e: Event) {
+    const target = e.target as HTMLInputElement
+    const soloNumeros = target.value.replace(/\D/g, '').slice(0, 9)
+    datosForm.telefono = soloNumeros
+    target.value = soloNumeros
 }
 
 async function executeGuardarDatos() {

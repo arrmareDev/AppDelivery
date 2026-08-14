@@ -14,7 +14,7 @@
                 <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Únete como motorizado</p>
             </div>
 
-            <form @submit.prevent="handleRegister" class="card p-6 sm:p-8 flex flex-col gap-5">
+            <form @submit.prevent="handleRegister" class="card p-6 sm:p-8 flex flex-col gap-5" novalidate>
 
                 <!-- ══ DATOS PERSONALES ══ -->
                 <div>
@@ -23,51 +23,63 @@
                     <div class="flex flex-col gap-3.5">
                         <div>
                             <label class="field-label">DNI *</label>
-                            <input v-model="form.dni" required maxlength="15" placeholder="12345678"
-                                class="field-input" />
+                            <input :value="form.dni" @input="onDniInput" inputmode="numeric" maxlength="8"
+                                placeholder="12345678" class="field-input" :class="errClass('dni')" />
+                            <p v-if="fieldErrors.dni" class="field-error">{{ fieldErrors.dni }}</p>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                             <div>
                                 <label class="field-label">Nombres *</label>
-                                <input v-model="form.nombres" required placeholder="Juan Carlos" class="field-input" />
+                                <input v-model="form.nombres" placeholder="Juan Carlos" class="field-input"
+                                    :class="errClass('nombres')" />
+                                <p v-if="fieldErrors.nombres" class="field-error">{{ fieldErrors.nombres }}</p>
                             </div>
                             <div>
                                 <label class="field-label">Apellidos *</label>
-                                <input v-model="form.apellidos" required placeholder="Pérez Gómez"
-                                    class="field-input" />
+                                <input v-model="form.apellidos" placeholder="Pérez Gómez" class="field-input"
+                                    :class="errClass('apellidos')" />
+                                <p v-if="fieldErrors.apellidos" class="field-error">{{ fieldErrors.apellidos }}</p>
                             </div>
                         </div>
 
                         <div>
                             <label class="field-label">Fecha de nacimiento *</label>
-                            <input v-model="form.fecha_nacimiento" type="date" required :max="fechaMaximaNacimiento"
-                                class="field-input" />
+                            <input v-model="form.fecha_nacimiento" type="date" :max="fechaMaximaNacimiento"
+                                class="field-input" :class="errClass('fecha_nacimiento')" />
+                            <p v-if="fieldErrors.fecha_nacimiento" class="field-error">{{ fieldErrors.fecha_nacimiento
+                                }}</p>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                             <div>
                                 <label class="field-label">Teléfono *</label>
-                                <input v-model="form.telefono" required placeholder="987 654 321" class="field-input" />
+                                <input :value="form.telefono" @input="onTelefonoInput" type="tel" inputmode="numeric"
+                                    maxlength="9" placeholder="987654321" class="field-input"
+                                    :class="errClass('telefono')" />
+                                <p v-if="fieldErrors.telefono" class="field-error">{{ fieldErrors.telefono }}</p>
                             </div>
                             <div>
                                 <label class="field-label">Correo *</label>
-                                <input v-model="form.email" type="email" required placeholder="tu@correo.com"
-                                    class="field-input" />
+                                <input v-model="form.email" type="email" placeholder="tu@correo.com" class="field-input"
+                                    :class="errClass('email')" />
+                                <p v-if="fieldErrors.email" class="field-error">{{ fieldErrors.email }}</p>
                             </div>
                         </div>
 
                         <div>
                             <label class="field-label">Contraseña *</label>
                             <div class="relative">
-                                <input v-model="form.password" :type="showPassword ? 'text' : 'password'" required
-                                    minlength="6" placeholder="Mínimo 6 caracteres" class="field-input pr-11" />
+                                <input v-model="form.password" :type="showPassword ? 'text' : 'password'" minlength="8"
+                                    placeholder="Mínimo 8 caracteres" class="field-input pr-11"
+                                    :class="errClass('password')" />
                                 <button type="button" @click="showPassword = !showPassword" tabindex="-1"
                                     class="field-input-icon-btn">
                                     <EyeSlashIcon v-if="showPassword" class="w-[18px] h-[18px]" />
                                     <EyeIcon v-else class="w-[18px] h-[18px]" />
                                 </button>
                             </div>
+                            <p v-if="fieldErrors.password" class="field-error">{{ fieldErrors.password }}</p>
                         </div>
                     </div>
                 </div>
@@ -79,35 +91,45 @@
                     <div class="flex flex-col gap-3.5">
                         <div>
                             <label class="field-label">Placa *</label>
-                            <input v-model="form.placa" required maxlength="10" placeholder="ABC-123"
-                                class="field-input uppercase" @input="form.placa = form.placa.toUpperCase()" />
+                            <input v-model="form.placa" maxlength="10" placeholder="ABC-123"
+                                class="field-input uppercase" :class="errClass('placa')"
+                                @input="form.placa = form.placa.toUpperCase()" />
+                            <p v-if="fieldErrors.placa" class="field-error">{{ fieldErrors.placa }}</p>
                         </div>
 
                         <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5">
                             <div>
                                 <label class="field-label">Marca *</label>
-                                <input v-model="form.marca_vehiculo" required placeholder="Honda" class="field-input" />
+                                <input v-model="form.marca_vehiculo" placeholder="Honda" class="field-input"
+                                    :class="errClass('marca_vehiculo')" />
+                                <p v-if="fieldErrors.marca_vehiculo" class="field-error">{{ fieldErrors.marca_vehiculo
+                                    }}</p>
                             </div>
                             <div>
                                 <label class="field-label">Modelo *</label>
-                                <input v-model="form.modelo_vehiculo" required placeholder="CB110"
-                                    class="field-input" />
+                                <input v-model="form.modelo_vehiculo" placeholder="CB110" class="field-input"
+                                    :class="errClass('modelo_vehiculo')" />
+                                <p v-if="fieldErrors.modelo_vehiculo" class="field-error">{{ fieldErrors.modelo_vehiculo
+                                    }}</p>
                             </div>
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="field-label">Año *</label>
-                                <input v-model.number="form.anio_vehiculo" type="number" required min="1990"
-                                    :max="anioMaximo" placeholder="2022" class="field-input" />
+                                <input v-model.number="form.anio_vehiculo" type="number" min="1990" :max="anioMaximo"
+                                    placeholder="2022" class="field-input" :class="errClass('anio_vehiculo')" />
+                                <p v-if="fieldErrors.anio_vehiculo" class="field-error">{{ fieldErrors.anio_vehiculo }}
+                                </p>
                             </div>
                         </div>
 
                         <div>
                             <label class="field-label">Foto del vehículo *</label>
                             <div class="relative">
-                                <input ref="fileInput" type="file" accept="image/*" required @change="onFotoChange"
+                                <input ref="fileInput" type="file" accept="image/*" @change="onFotoChange"
                                     class="hidden" />
                                 <button type="button" @click="fileInput?.click()" class="w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-dashed
                                            bg-gray-50 hover:bg-gray-100 transition-colors duration-200"
-                                    style="border-color: #e5e7eb">
+                                    :class="fieldErrors.foto_vehiculo ? 'border-red-300' : ''"
+                                    :style="!fieldErrors.foto_vehiculo ? 'border-color: #e5e7eb' : ''">
                                     <div v-if="fotoPreview" class="w-12 h-12 rounded-xl overflow-hidden shrink-0 border"
                                         style="border-color: var(--color-line)">
                                         <img :src="fotoPreview" class="w-full h-full object-cover" />
@@ -122,12 +144,15 @@
                                     </span>
                                 </button>
                             </div>
+                            <p v-if="fieldErrors.foto_vehiculo" class="field-error">{{ fieldErrors.foto_vehiculo }}</p>
                         </div>
 
                         <div>
                             <label class="field-label">Número de SOAT <span class="normal-case font-medium"
                                     style="color: var(--color-ink-faint)">(opcional)</span></label>
-                            <input v-model="form.soat_numero" placeholder="Si ya lo tienes" class="field-input" />
+                            <input v-model="form.soat_numero" placeholder="Si ya lo tienes" class="field-input"
+                                :class="errClass('soat_numero')" />
+                            <p v-if="fieldErrors.soat_numero" class="field-error">{{ fieldErrors.soat_numero }}</p>
                         </div>
                     </div>
                 </div>
@@ -193,6 +218,15 @@ const successMsg = ref('')
 const fileInput = ref<HTMLInputElement | null>(null)
 const fotoPreview = ref('')
 
+// Un mensaje por campo — el mismo objeto sirve tanto para lo que
+// detectamos aquí antes de mandar el formulario, como para lo que
+// el backend rechace después (los nombres de campo coinciden).
+const fieldErrors = reactive<Record<string, string>>({})
+
+function errClass(campo: string) {
+    return fieldErrors[campo] ? 'border-red-400 bg-red-50/50' : ''
+}
+
 const anioMaximo = new Date().getFullYear() + 1
 
 // Debe ser mayor de 18 años — fecha máxima seleccionable
@@ -209,16 +243,51 @@ function onFotoChange(e: Event) {
     fotoPreview.value = URL.createObjectURL(file)
 }
 
+// Filtra cualquier caracter que no sea número mientras se escribe —
+// evita el problema de fondo: algunos teclados de celular dejan colar
+// espacios, guiones o letras que otros no, y eso rompía el registro
+// de forma inconsistente entre equipos.
+function onDniInput(e: Event) {
+    const target = e.target as HTMLInputElement
+    const soloNumeros = target.value.replace(/\D/g, '').slice(0, 8)
+    form.dni = soloNumeros
+    target.value = soloNumeros
+}
+
+function onTelefonoInput(e: Event) {
+    const target = e.target as HTMLInputElement
+    const soloNumeros = target.value.replace(/\D/g, '').slice(0, 9)
+    form.telefono = soloNumeros
+    target.value = soloNumeros
+}
+
+// Revisa TODOS los campos de una — no se detiene en el primero que
+// encuentra mal, así se marcan todos los que fallan a la vez.
+function validarFormulario(): boolean {
+    Object.keys(fieldErrors).forEach((k) => delete fieldErrors[k])
+
+    if (form.dni.length !== 8) fieldErrors.dni = 'Debe tener exactamente 8 dígitos'
+    if (!form.nombres.trim()) fieldErrors.nombres = 'Obligatorio'
+    if (!form.apellidos.trim()) fieldErrors.apellidos = 'Obligatorio'
+    if (!form.fecha_nacimiento) fieldErrors.fecha_nacimiento = 'Obligatorio'
+    if (form.telefono.length !== 9) fieldErrors.telefono = 'Debe tener exactamente 9 dígitos'
+    if (!form.email.trim()) fieldErrors.email = 'Obligatorio'
+    if (form.password.length < 8) fieldErrors.password = 'Mínimo 8 caracteres'
+    if (!form.placa.trim()) fieldErrors.placa = 'Obligatorio'
+    if (!form.marca_vehiculo.trim()) fieldErrors.marca_vehiculo = 'Obligatorio'
+    if (!form.modelo_vehiculo.trim()) fieldErrors.modelo_vehiculo = 'Obligatorio'
+    if (!form.anio_vehiculo) fieldErrors.anio_vehiculo = 'Obligatorio'
+    if (!form.foto_vehiculo) fieldErrors.foto_vehiculo = 'Debes subir una foto del vehículo'
+
+    return Object.keys(fieldErrors).length === 0
+}
+
 async function handleRegister() {
     errorMsg.value = ''
     successMsg.value = ''
 
-    if (!form.foto_vehiculo) {
-        errorMsg.value = 'Debes subir una foto del vehículo'
-        return
-    }
-    if (!form.anio_vehiculo) {
-        errorMsg.value = 'Ingresa el año del vehículo'
+    if (!validarFormulario()) {
+        errorMsg.value = 'Revisa los campos marcados en rojo'
         return
     }
 
@@ -234,8 +303,8 @@ async function handleRegister() {
         placa: form.placa,
         marca_vehiculo: form.marca_vehiculo,
         modelo_vehiculo: form.modelo_vehiculo,
-        anio_vehiculo: form.anio_vehiculo,
-        foto_vehiculo: form.foto_vehiculo,
+        anio_vehiculo: form.anio_vehiculo!,
+        foto_vehiculo: form.foto_vehiculo!,
         soat_numero: form.soat_numero || undefined,
     })
     loading.value = false
@@ -245,6 +314,11 @@ async function handleRegister() {
         setTimeout(() => router.push('/verificar-correo'), 1500)
     } else {
         errorMsg.value = result.message
+        if (result.errors) {
+            Object.entries(result.errors).forEach(([campo, mensajes]) => {
+                fieldErrors[campo] = mensajes[0]
+            })
+        }
     }
 }
 </script>

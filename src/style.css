@@ -183,6 +183,11 @@ textarea {
     color: var(--color-ink-faint);
   }
 
+  .field-error {
+    @apply text-[12px] font-semibold mt-1.5 mb-0;
+    color: #dc2626;
+  }
+
   .field-input {
     @apply w-full px-4 py-3 rounded-2xl border-2 bg-gray-50 text-[15px] outline-none
            transition-all duration-200;

@@ -77,7 +77,11 @@ export const useAuthStore = defineStore("auth", () => {
     anio_vehiculo: number;
     foto_vehiculo: File;
     soat_numero?: string;
-  }): Promise<{ ok: boolean; message: string }> {
+  }): Promise<{
+    ok: boolean;
+    message: string;
+    errors?: Record<string, string[]>;
+  }> {
     loading.value = true;
     try {
       const formData = new FormData();
@@ -88,7 +92,7 @@ export const useAuthStore = defineStore("auth", () => {
       });
 
       const { data } = await api.post("/motorizado/auth/register", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: { "Content-Type": undefined },
       });
       token.value = data.data.token;
       user.value = data.data.motorizado;
@@ -99,9 +103,18 @@ export const useAuthStore = defineStore("auth", () => {
       );
       return { ok: true, message: data.message };
     } catch (e: any) {
+      // Los errores de validación de Laravel vienen en .errors (uno por
+      // campo), no en .message — sin esto, siempre se veía el mensaje
+      // genérico sin importar cuál fuera el problema real.
+      const errors = e.response?.data?.errors;
+      const primerError = errors
+        ? (Object.values(errors)[0] as string[])?.[0]
+        : null;
       return {
         ok: false,
-        message: e.response?.data?.message ?? "Error al registrarse",
+        message:
+          primerError ?? e.response?.data?.message ?? "Error al registrarse",
+        errors,
       };
     } finally {
       loading.value = false;
