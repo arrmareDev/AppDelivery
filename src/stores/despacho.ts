@@ -5,6 +5,9 @@ import api from "../api/axios";
 export interface DespachoItem {
   id: number;
   negocio?: string;
+  negocio_direccion?: string | null;
+  negocio_lat?: number | null;
+  negocio_lng?: number | null;
   order_id: number;
   estado: string;
   comision_motorizado: number;
@@ -152,6 +155,8 @@ export const useDespachosStore = defineStore("despachos", () => {
       );
 
       if (estado === "entregado") {
+        // Sale de la lista de activos — los otros 1 o 2 pedidos en
+        // curso siguen ahí, intactos.
         activos.value = activos.value.filter((d) => d.id !== despachoId);
         await fetchHistorial();
       } else {

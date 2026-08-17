@@ -53,11 +53,16 @@ const router = createRouter({
       meta: { auth: true },
     },
     {
+      path: "/estadisticas",
+      name: "estadisticas",
+      component: () => import("../views/EstadisticasView.vue"),
+      meta: { auth: true },
+    },
+    {
       path: "/perfil",
       name: "perfil",
       component: () => import("../views/PerfilView.vue"),
-      // ↓ CORREGIDO: antes decía `requiresAuth` (no coincide con el guard
-      // de abajo, que lee `auth`), así que esta ruta quedaba SIN protección.
+
       meta: { auth: true },
     },
     {
@@ -73,8 +78,6 @@ router.beforeEach((to) => {
   if (to.meta.auth && !auth.isAuth) return "/login";
   if (to.meta.guest && auth.isAuth) return "/";
 
-  // Bloquea toda ruta autenticada si el correo no está verificado,
-  // salvo la propia pantalla de verificación (para no hacer un loop).
   if (
     to.meta.auth &&
     auth.isAuth &&

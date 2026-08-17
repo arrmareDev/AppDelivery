@@ -129,18 +129,17 @@
               <div class="flex items-baseline gap-0.5">
                 <span class="text-[10px] text-gray-400">S/</span>
                 <span class="amount text-base leading-none" style="color: var(--color-brand-600)">
-                  {{ Number(d.order?.total ?? 0).toFixed(2) }}
+                  {{ Number(d.order?.delivery_fee ?? 0).toFixed(2) }}
                 </span>
               </div>
             </div>
           </div>
 
-          <!-- Productos con precio -->
+          <!-- Productos, sin precio -->
           <div v-if="d.order?.items?.length" class="flex flex-wrap gap-1.5 pl-[52px]">
             <span v-for="item in d.order.items.slice(0, 3)" :key="item.name"
               class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium">
               {{ item.qty }}x {{ item.name }}
-              <template v-if="precioSubtotal(item) !== null"> · S/{{ precioSubtotal(item)!.toFixed(2) }}</template>
             </span>
             <span v-if="d.order.items.length > 3"
               class="text-[11px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-400">
@@ -270,47 +269,24 @@
                           style="color: var(--color-ink-faint)">
                           {{ item.custom_summary }}
                         </p>
-                        <p v-if="precioUnitario(item) !== null" class="text-[11px] m-0 mt-0.5"
-                          style="color: var(--color-ink-faint)">
-                          S/ {{ precioUnitario(item)!.toFixed(2) }} c/u
-                        </p>
                       </div>
-                      <div class="flex flex-col items-end gap-0.5 shrink-0">
-                        <span class="order-code text-xs text-gray-500
-                                     bg-white px-2 py-0.5 rounded-lg border border-gray-200">
-                          x{{ item.qty }}
-                        </span>
-                        <span v-if="precioSubtotal(item) !== null" class="amount text-[12px]"
-                          style="color: var(--color-ink-soft)">
-                          S/ {{ precioSubtotal(item)!.toFixed(2) }}
-                        </span>
-                      </div>
+                      <span class="order-code text-xs text-gray-500
+                                   bg-white px-2 py-0.5 rounded-lg border border-gray-200 shrink-0">
+                        x{{ item.qty }}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <!-- Totales -->
-                <div class="bg-gray-50 rounded-2xl p-4 flex flex-col gap-2 mb-4">
-                  <div v-if="detalle.item.order?.subtotal" class="flex justify-between text-[12.5px]">
-                    <span class="text-gray-500">Subtotal productos</span>
-                    <span class="amount" style="color: var(--color-ink-soft)">
-                      S/ {{ Number(detalle.item.order.subtotal).toFixed(2) }}
+                <!-- Costo de delivery -->
+                <div v-if="detalle.item.order?.delivery_fee"
+                  class="bg-gray-50 rounded-2xl p-4 flex justify-between items-center mb-4">
+                  <span class="font-bold text-[13px]" style="color: var(--color-ink-soft)">Costo de delivery</span>
+                  <div class="flex items-baseline gap-0.5">
+                    <span class="text-[11px] text-gray-400">S/</span>
+                    <span class="amount text-[18px] leading-none" style="color: var(--color-brand-600)">
+                      {{ Number(detalle.item.order.delivery_fee).toFixed(2) }}
                     </span>
-                  </div>
-                  <div v-if="detalle.item.order?.delivery_fee" class="flex justify-between text-[12.5px]">
-                    <span class="text-gray-500">Costo de delivery</span>
-                    <span class="amount text-blue-600">
-                      S/ {{ Number(detalle.item.order.delivery_fee).toFixed(2) }}
-                    </span>
-                  </div>
-                  <div class="flex justify-between pt-2 border-t border-gray-200">
-                    <span class="font-bold text-[13px]" style="color: var(--color-ink-soft)">Total</span>
-                    <div class="flex items-baseline gap-0.5">
-                      <span class="text-[11px] text-gray-400">S/</span>
-                      <span class="amount text-[18px] leading-none" style="color: var(--color-brand-600)">
-                        {{ Number(detalle.item.order?.total ?? 0).toFixed(2) }}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -485,22 +461,5 @@ function formatFecha(d: string): string {
     day: '2-digit', month: 'short',
     hour: '2-digit', minute: '2-digit',
   })
-}
-
-// Precio por unidad — se deriva de subtotal/qty si el backend no manda
-// unit_price directamente, para que el precio siempre se muestre
-// mientras exista al menos uno de los dos campos.
-type ItemPedido = NonNullable<NonNullable<DespachoItem['order']>['items']>[number]
-
-function precioUnitario(item: ItemPedido): number | null {
-  if (item.unit_price != null) return Number(item.unit_price)
-  if (item.subtotal != null && item.qty) return Number(item.subtotal) / item.qty
-  return null
-}
-
-function precioSubtotal(item: ItemPedido): number | null {
-  if (item.subtotal != null) return Number(item.subtotal)
-  if (item.unit_price != null) return Number(item.unit_price) * item.qty
-  return null
 }
 </script>

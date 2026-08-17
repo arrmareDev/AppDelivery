@@ -82,11 +82,18 @@
                     <!-- INFO CLIENTE -->
                     <div class="card p-4 flex flex-col gap-3">
 
-                        <!-- Badge negocio -->
-                        <span v-if="despacho.negocio"
-                            class="badge bg-purple-50 text-purple-700 border-purple-200 self-start">
-                            {{ despacho.negocio }}
-                        </span>
+                        <!-- Badge negocio + dirección de recojo -->
+                        <div>
+                            <span v-if="despacho.negocio"
+                                class="badge bg-purple-50 text-purple-700 border-purple-200 self-start">
+                                {{ despacho.negocio }}
+                            </span>
+                            <p v-if="despacho.negocio_direccion"
+                                class="text-[12px] text-gray-400 mt-1.5 m-0 flex items-start gap-1">
+                                <BuildingStorefrontIcon class="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                                {{ despacho.negocio_direccion }}
+                            </p>
+                        </div>
 
                         <!-- Nombre cliente -->
                         <h2 class="font-black text-[16px] m-0" style="color: var(--color-ink)">
@@ -192,48 +199,24 @@
                                         style="color: var(--color-ink-faint)">
                                         {{ item.custom_summary }}
                                     </p>
-                                    <p v-if="precioUnitario(item) !== null" class="text-[11.5px] m-0 mt-0.5"
-                                        style="color: var(--color-ink-faint)">
-                                        S/ {{ precioUnitario(item)!.toFixed(2) }} c/u
-                                    </p>
                                 </div>
-                                <div class="flex flex-col items-end gap-0.5 shrink-0">
-                                    <span class="order-code text-xs text-gray-500 bg-gray-100
-                                                 px-2 py-0.5 rounded-lg">
-                                        x{{ item.qty }}
-                                    </span>
-                                    <span v-if="precioSubtotal(item) !== null" class="amount text-[12px]"
-                                        style="color: var(--color-ink-soft)">
-                                        S/ {{ precioSubtotal(item)!.toFixed(2) }}
-                                    </span>
-                                </div>
+                                <span class="order-code text-xs text-gray-500 bg-gray-100
+                                             px-2 py-0.5 rounded-lg shrink-0">
+                                    x{{ item.qty }}
+                                </span>
                             </div>
                         </div>
 
-                        <!-- Totales desglosados -->
-                        <div class="px-4 py-3 border-t border-gray-100 flex flex-col gap-1.5 bg-gray-50/50">
-                            <div v-if="despacho.order?.subtotal"
-                                class="flex items-center justify-between text-[12.5px]">
-                                <span class="text-gray-500">Subtotal</span>
-                                <span class="amount" style="color: var(--color-ink-soft)">
-                                    S/ {{ Number(despacho.order.subtotal).toFixed(2) }}
+                        <!-- Costo de delivery — el motorizado no ve el precio del pedido -->
+                        <div v-if="despacho.order?.delivery_fee"
+                            class="px-4 py-3 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                            <span class="font-bold text-[13px]" style="color: var(--color-ink-soft)">Costo de
+                                delivery</span>
+                            <div class="flex items-baseline gap-0.5">
+                                <span class="text-[11px] text-gray-400">S/</span>
+                                <span class="amount text-[18px] leading-none" style="color: var(--color-brand-600)">
+                                    {{ Number(despacho.order.delivery_fee).toFixed(2) }}
                                 </span>
-                            </div>
-                            <div v-if="despacho.order?.delivery_fee"
-                                class="flex items-center justify-between text-[12.5px]">
-                                <span class="text-gray-500">Delivery</span>
-                                <span class="amount text-blue-600">
-                                    S/ {{ Number(despacho.order.delivery_fee).toFixed(2) }}
-                                </span>
-                            </div>
-                            <div class="flex items-center justify-between pt-1.5 border-t border-gray-200">
-                                <span class="font-bold text-[13px]" style="color: var(--color-ink-soft)">Total</span>
-                                <div class="flex items-baseline gap-0.5">
-                                    <span class="text-[11px] text-gray-400">S/</span>
-                                    <span class="amount text-[18px] leading-none" style="color: var(--color-brand-600)">
-                                        {{ Number(despacho.order?.total).toFixed(2) }}
-                                    </span>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -357,6 +340,7 @@ import {
     BanknotesIcon,
     CreditCardIcon,
     ArchiveBoxArrowDownIcon,
+    BuildingStorefrontIcon,
 } from '@heroicons/vue/24/outline'
 import { CheckIcon, CheckCircleIcon } from '@heroicons/vue/24/solid'
 import { useDespachosStore } from '../stores/despacho'
@@ -403,10 +387,16 @@ const STEPS = [
 const FLOW = ['aceptado', 'recogido', 'entregado']
 
 // ── Computados ────────────────────────────────────────────
-const esContraentrega = computed(() =>
-    ['contraentrega_efectivo', 'contraentrega_yape']
-        .includes(despacho.value?.order?.metodo_pago ?? '')
-)
+// Mismo criterio que en DetallePedidoModal.vue: si el negocio ya
+// mandó "pagado" explícito, eso manda — el texto de metodo_pago
+// solo se usa como respaldo cuando no viene ese dato.
+const esContraentrega = computed(() => {
+    const o = despacho.value?.order
+    if (!o) return false
+    if (o.pagado === true) return false
+    if (o.pagado === false) return true
+    return ['contraentrega_efectivo', 'contraentrega_yape'].includes(o.metodo_pago ?? '')
+})
 
 const mapsLink = computed(() => {
     const o = despacho.value?.order
@@ -434,21 +424,6 @@ function estadoLabel(s: string): string {
         entregado: 'Entregado',
     }
     return m[s] ?? s
-}
-
-// Precio por unidad — se deriva de subtotal/qty si el backend no manda
-// unit_price directamente, para que el precio siempre se muestre
-// mientras exista al menos uno de los dos campos.
-function precioUnitario(item: { unit_price?: number; subtotal?: number; qty: number }): number | null {
-    if (item.unit_price != null) return Number(item.unit_price)
-    if (item.subtotal != null && item.qty) return Number(item.subtotal) / item.qty
-    return null
-}
-
-function precioSubtotal(item: { unit_price?: number; subtotal?: number; qty: number }): number | null {
-    if (item.subtotal != null) return Number(item.subtotal)
-    if (item.unit_price != null) return Number(item.unit_price) * item.qty
-    return null
 }
 
 function metodoPagoLabel(m: string): string {

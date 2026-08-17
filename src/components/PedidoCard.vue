@@ -6,7 +6,7 @@
 
         <div class="p-4">
 
-            <!-- Header: ID + Total -->
+            <!-- Header: ID + Costo de delivery (no el precio del pedido) -->
             <div class="flex items-center justify-between mb-2">
                 <span class="order-code text-xs px-2 py-0.5 rounded-lg bg-gray-100 text-gray-600">
                     #{{ despacho.order_id }}
@@ -14,7 +14,7 @@
                 <div class="flex items-baseline gap-0.5">
                     <span class="text-xs font-semibold text-gray-400">S/</span>
                     <span class="amount text-xl leading-none" style="color: var(--color-brand-600)">
-                        {{ Number(despacho.order?.total ?? 0).toFixed(2) }}
+                        {{ Number(despacho.order?.delivery_fee ?? 0).toFixed(2) }}
                     </span>
                 </div>
             </div>
@@ -74,7 +74,8 @@
 
         <!-- Toca para ver detalle -->
         <div class="w-full py-3 text-center text-sm font-black border-t border-gray-100"
-            :class="deshabilitado ? 'text-gray-400' : ''" :style="!deshabilitado ? 'color: var(--color-brand-600)' : ''">
+            :class="deshabilitado ? 'text-gray-400' : ''"
+            :style="!deshabilitado ? 'color: var(--color-brand-600)' : ''">
             {{ deshabilitado ? 'Límite de pedidos alcanzado' : 'Toca para ver el detalle →' }}
         </div>
     </div>

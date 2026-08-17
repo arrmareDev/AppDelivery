@@ -3,7 +3,7 @@
 
         <!-- Header -->
         <header class="app-header">
-            <div class="max-w-4xl mx-auto flex items-center gap-3">
+            <div class="max-w-7xl mx-auto flex items-center gap-3">
                 <button @click="router.push('/')" class="back-btn">
                     <ArrowLeftIcon class="w-4 h-4" />
                 </button>
@@ -15,7 +15,7 @@
             </div>
         </header>
 
-        <div class="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 pb-24
+        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 pb-24
                     lg:grid lg:grid-cols-[280px_1fr] lg:gap-6 lg:items-start">
 
             <!-- Avatar + resumen — columna fija en desktop -->
