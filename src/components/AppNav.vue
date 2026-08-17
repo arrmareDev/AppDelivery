@@ -8,9 +8,8 @@
             </div>
             <div class="min-w-0">
                 <p class="font-black text-[14px] leading-tight m-0 truncate" style="color: var(--color-ink)">
-                    Delivery Central
+                    Monarca Go
                 </p>
-                <p class="text-[11px] m-0" style="color: var(--color-ink-faint)">Panel motorizado</p>
             </div>
         </div>
 
@@ -24,6 +23,11 @@
                 :class="{ 'sidebar-link--active': active === 'historial' }">
                 <ClipboardDocumentListIcon class="w-5 h-5 shrink-0" />
                 Historial
+            </button>
+            <button @click="$emit('navigate', '/estadisticas')" class="sidebar-link"
+                :class="{ 'sidebar-link--active': active === 'estadisticas' }">
+                <ChartBarIcon class="w-5 h-5 shrink-0" />
+                Estadísticas
             </button>
             <button @click="$emit('navigate', '/perfil')" class="sidebar-link"
                 :class="{ 'sidebar-link--active': active === 'perfil' }">
@@ -73,6 +77,15 @@
             <span class="text-[10px] font-bold">Historial</span>
         </button>
 
+        <button @click="$emit('navigate', '/estadisticas')" class="flex-1 flex flex-col items-center py-2.5 gap-1 border-none bg-transparent
+                   cursor-pointer transition-colors relative"
+            :class="active === 'estadisticas' ? 'text-[color:var(--color-brand-600)]' : 'text-gray-400 hover:bg-gray-50 hover:text-[color:var(--color-brand-500)]'">
+            <span v-if="active === 'estadisticas'"
+                class="absolute top-0 w-8 h-0.5 rounded-full bg-[color:var(--color-brand-600)]" />
+            <ChartBarIcon class="w-5 h-5" />
+            <span class="text-[10px] font-bold">Stats</span>
+        </button>
+
         <button @click="$emit('navigate', '/perfil')" class="flex-1 flex flex-col items-center py-2.5 gap-1 border-none bg-transparent
                    cursor-pointer transition-colors relative"
             :class="active === 'perfil' ? 'text-[color:var(--color-brand-600)]' : 'text-gray-400 hover:bg-gray-50 hover:text-[color:var(--color-brand-500)]'">
@@ -95,6 +108,7 @@
 import {
     HomeIcon,
     ClipboardDocumentListIcon,
+    ChartBarIcon,
     UserCircleIcon,
     ArrowRightOnRectangleIcon,
     TruckIcon,
@@ -102,7 +116,7 @@ import {
 import { useAuthStore } from '../stores/auth'
 import { useResponsive } from '../composables/useResponsive'
 
-defineProps<{ active: 'home' | 'historial' | 'perfil' | '' }>()
+defineProps<{ active: 'home' | 'historial' | 'estadisticas' | 'perfil' | '' }>()
 defineEmits<{ navigate: [path: string]; logout: [] }>()
 
 const auth = useAuthStore()
