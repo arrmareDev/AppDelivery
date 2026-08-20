@@ -28,6 +28,12 @@
                                     <BuildingStorefrontIcon class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                     {{ despacho.negocio_direccion }}
                                 </p>
+                                <a v-if="tieneCoordenadasNegocio" :href="mapsUrlNegocio" target="_blank" rel="noopener"
+                                    class="inline-flex items-center gap-1 mt-1 text-[11.5px] font-bold no-underline"
+                                    style="color: var(--color-brand-600)">
+                                    <ArrowTopRightOnSquareIcon class="w-3 h-3" />
+                                    Abrir en Maps para ir a la tienda
+                                </a>
                             </div>
                             <button @click="$emit('close')"
                                 class="w-9 h-9 rounded-full flex items-center justify-center shrink-0
@@ -184,6 +190,16 @@ const totalPedido = computed(() =>
 const tieneCoordenadas = computed(() =>
     !!(props.despacho?.order?.lat && props.despacho?.order?.lng)
 )
+
+const tieneCoordenadasNegocio = computed(() =>
+    !!(props.despacho?.negocio_lat && props.despacho?.negocio_lng)
+)
+
+const mapsUrlNegocio = computed(() => {
+    const d = props.despacho
+    if (!d?.negocio_lat || !d?.negocio_lng) return ''
+    return `https://www.google.com/maps/dir/?api=1&destination=${d.negocio_lat},${d.negocio_lng}`
+})
 
 // El backend manda "pagado" cuando el negocio lo especifica. Si no viene
 // (negocios más viejos que todavía no lo mandan), caemos de respaldo a

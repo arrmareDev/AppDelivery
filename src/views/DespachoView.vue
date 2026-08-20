@@ -93,6 +93,13 @@
                                 <BuildingStorefrontIcon class="w-3.5 h-3.5 shrink-0 mt-0.5" />
                                 {{ despacho.negocio_direccion }}
                             </p>
+                            <a v-if="despacho.negocio_lat && despacho.negocio_lng"
+                                :href="`https://www.google.com/maps/dir/?api=1&destination=${despacho.negocio_lat},${despacho.negocio_lng}`"
+                                target="_blank"
+                                class="inline-flex items-center gap-1 mt-1 text-[11.5px] font-bold no-underline"
+                                style="color: var(--color-brand-600)">
+                                <MapIcon class="w-3 h-3" /> Abrir en Maps para ir a la tienda
+                            </a>
                         </div>
 
                         <!-- Nombre cliente -->
