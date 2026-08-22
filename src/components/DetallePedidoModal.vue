@@ -269,9 +269,9 @@ function initMapa() {
     const redIcon = L.divIcon({
         className: '',
         html: `<div style="
-            width:26px;height:26px;background:#dc2626;border:3px solid white;
+            width:26px;height:26px;background:#8f5c00;border:3px solid white;
             border-radius:50% 50% 50% 0;transform:rotate(-45deg);
-            box-shadow:0 2px 8px rgba(220,38,38,0.5);
+            box-shadow:0 2px 8px rgba(143,92,0,0.5);
         "></div>`,
         iconSize: [26, 26],
         iconAnchor: [13, 26],

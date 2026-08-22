@@ -5,7 +5,7 @@
             <div class="text-center mb-8">
                 <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center
                             justify-center mx-auto mb-4"
-                    style="background: var(--color-brand-600); box-shadow: 0 12px 28px -10px rgba(200,55,31,0.5)">
+                    style="background: var(--color-brand-600); box-shadow: 0 12px 28px -10px rgba(143,92,0,0.5)">
                     <KeyIcon class="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                 </div>
                 <h1 class="font-black text-2xl sm:text-3xl m-0" style="color: var(--color-ink)">

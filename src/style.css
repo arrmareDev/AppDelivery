@@ -13,17 +13,24 @@
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
-  /* Marca — rojo motorizado, un punto más cálido que el rojo genérico */
-  --color-brand-50: #fef2f0;
-  --color-brand-100: #fce1db;
-  --color-brand-200: #f8c1b5;
-  --color-brand-300: #f2977f;
-  --color-brand-400: #ea6c50;
-  --color-brand-500: #e1442a;
-  --color-brand-600: #c8371f;
-  --color-brand-700: #a32c18;
-  --color-brand-800: #7a2212;
-  --color-brand-900: #52170c;
+  /* Marca — dorado VoyYa, color exacto dado por el cliente (#FAA000).
+     El 600 es el tono que más se usa en toda la app (texto de enlaces,
+     precios, íconos sobre fondo), así que no podía ser el dorado puro
+     — un dorado brillante como texto sobre blanco da un contraste de
+     ~2:1, muy por debajo del mínimo de accesibilidad (4.5:1). El 600
+     quedó en un dorado más profundo (sí pasa el contraste) — el
+     dorado vibrante exacto vive en el 400, para botones/acentos/badges,
+     siempre con texto oscuro encima (nunca blanco) para que se lea bien. */
+  --color-brand-50: #fef8ec;
+  --color-brand-100: #fdecc4;
+  --color-brand-200: #fbd483;
+  --color-brand-300: #fbba3d;
+  --color-brand-400: #faa000;
+  --color-brand-500: #d68900;
+  --color-brand-600: #8f5c00;
+  --color-brand-700: #744a00;
+  --color-brand-800: #5c3a00;
+  --color-brand-900: #402900;
 
   /* Neutros propios — más cálidos que el gray por defecto */
   --color-ink: #14181f;
@@ -44,6 +51,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -53,6 +61,10 @@ body {
   min-height: 100dvh;
   margin: 0;
   overflow-x: hidden;
+  /* Sin esto, hacer scroll hasta el final y seguir arrastrando muestra
+     el rebote elástico del navegador — la señal más clara de "esto es
+     una página web" en vez de una app instalada. */
+  overscroll-behavior-y: none;
 }
 
 button,
@@ -129,8 +141,13 @@ textarea {
   }
 
   .app-header {
-    @apply bg-white border-b sticky top-0 z-30 px-4 sm:px-6 lg:px-8 py-4 shrink-0;
+    @apply bg-white border-b sticky top-0 z-30 px-4 sm:px-6 lg:px-8 shrink-0;
     border-color: var(--color-line);
+    /* max(): en celulares sin notch se queda en el 1rem de siempre; en
+       los que sí tienen (o con la barra de gestos activa en standalone),
+       crece lo que haga falta para no quedar tapado. */
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-bottom: 1rem;
   }
 
   .app-container {
@@ -234,12 +251,21 @@ textarea {
     @apply inline-flex items-center justify-center gap-2 rounded-2xl font-bold
            border-none cursor-pointer transition-all duration-200 select-none
            disabled:opacity-50 disabled:cursor-not-allowed
-           py-3.5 text-[15px] font-black active:scale-[0.98] w-full text-white;
-    background: var(--color-brand-600);
-    box-shadow: 0 10px 24px -10px rgba(200, 55, 31, 0.55);
+           py-3.5 text-[15px] font-black active:scale-[0.98] w-full;
+    background: var(--color-brand-400);
+    color: #1a1200;
+    box-shadow: 0 10px 24px -10px rgba(250, 160, 0, 0.45);
   }
   .btn-primary:hover:not(:disabled) {
-    background: var(--color-brand-700);
+    background: var(--color-brand-500);
+  }
+  /* El .spinner global es blanco (pensado para botones de fondo oscuro
+     con texto blanco) — este botón ahora tiene fondo dorado claro con
+     texto oscuro, así que el spinner necesita el mismo ajuste acá,
+     sin tocar el spinner blanco que sí corresponde en otros botones. */
+  .btn-primary .spinner {
+    border-color: rgba(26, 18, 0, 0.25);
+    border-top-color: #1a1200;
   }
 
   .btn-outline {

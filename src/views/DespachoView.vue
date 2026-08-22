@@ -351,6 +351,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { CheckIcon, CheckCircleIcon } from '@heroicons/vue/24/solid'
 import { useDespachosStore } from '../stores/despacho'
+import type { DespachoItem, DespachoActualizadoEvent } from '../stores/despacho'
 import { useEcho } from '../composables/useEcho'
 import { useAuthStore } from '../stores/auth'
 import ConfirmModal from '../components/ConfirmModal.vue'
@@ -371,7 +372,7 @@ const auth = useAuthStore()
 const loading = ref(false)
 const loadingAccion = ref(false)
 const loggingOut = ref(false)
-const despacho = ref<any>(null)
+const despacho = ref<DespachoItem | null>(null)
 let clienteMap: L.Map | null = null
 
 // ── Modales ───────────────────────────────────────────────
@@ -492,9 +493,9 @@ function initClienteMap() {
     const redIcon = L.divIcon({
         className: '',
         html: `<div style="
-            width:28px;height:28px;background:#dc2626;border:3px solid white;
+            width:28px;height:28px;background:#8f5c00;border:3px solid white;
             border-radius:50% 50% 50% 0;transform:rotate(-45deg);
-            box-shadow:0 2px 8px rgba(220,38,38,0.5);
+            box-shadow:0 2px 8px rgba(143,92,0,0.5);
         "></div>`,
         iconSize: [28, 28],
         iconAnchor: [14, 28],
@@ -535,8 +536,8 @@ onMounted(async () => {
     const echo = useEcho()
     if (auth.user) {
         echo.channel(`motorizado.${auth.user.id}`)
-            .listen('.despacho.actualizado', (data: any) => {
-                if (data.despacho_id === id) {
+            .listen('.despacho.actualizado', (data: DespachoActualizadoEvent) => {
+                if (despacho.value && data.despacho_id === id) {
                     despacho.value = { ...despacho.value, ...data }
                 }
             })

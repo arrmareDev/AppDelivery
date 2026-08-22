@@ -2,20 +2,19 @@
     <div class="min-h-screen flex items-center justify-center px-4 py-8" style="background: var(--color-bg)">
         <div class="w-full max-w-lg">
 
-            <div class="text-center mb-6">
-                <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl flex items-center
-                            justify-center mx-auto mb-3"
-                    style="background: var(--color-brand-600); box-shadow: 0 12px 28px -10px rgba(200,55,31,0.5)">
-                    <UserPlusIcon class="w-7 h-7 sm:w-8 sm:h-8 text-white" />
-                </div>
-                <h1 class="font-black text-2xl sm:text-3xl m-0" style="color: var(--color-ink)">
-                    Crear cuenta
-                </h1>
-                <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Únete como motorizado</p>
-            </div>
-
             <form @submit.prevent="handleRegister" class="card p-6 sm:p-8 flex flex-col gap-5" novalidate>
 
+                <div class="text-center mb-6">
+                    <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl flex items-center
+                            justify-center mx-auto mb-3"
+                        style="background: var(--color-brand-600); box-shadow: 0 12px 28px -10px rgba(143,92,0,0.5)">
+                        <UserPlusIcon class="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+                    </div>
+                    <h1 class="font-black text-2xl sm:text-3xl m-0" style="color: var(--color-ink)">
+                        Crear cuenta
+                    </h1>
+                    <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Únete como motorizado</p>
+                </div>
                 <!-- ══ DATOS PERSONALES ══ -->
                 <div>
                     <p class="field-label mb-3" style="color: var(--color-brand-600)">Datos personales</p>
@@ -48,7 +47,7 @@
                             <input v-model="form.fecha_nacimiento" type="date" :max="fechaMaximaNacimiento"
                                 class="field-input" :class="errClass('fecha_nacimiento')" />
                             <p v-if="fieldErrors.fecha_nacimiento" class="field-error">{{ fieldErrors.fecha_nacimiento
-                                }}</p>
+                            }}</p>
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
@@ -103,14 +102,14 @@
                                 <input v-model="form.marca_vehiculo" placeholder="Honda" class="field-input"
                                     :class="errClass('marca_vehiculo')" />
                                 <p v-if="fieldErrors.marca_vehiculo" class="field-error">{{ fieldErrors.marca_vehiculo
-                                    }}</p>
+                                }}</p>
                             </div>
                             <div>
                                 <label class="field-label">Modelo *</label>
                                 <input v-model="form.modelo_vehiculo" placeholder="CB110" class="field-input"
                                     :class="errClass('modelo_vehiculo')" />
                                 <p v-if="fieldErrors.modelo_vehiculo" class="field-error">{{ fieldErrors.modelo_vehiculo
-                                    }}</p>
+                                }}</p>
                             </div>
                             <div class="col-span-2 sm:col-span-1">
                                 <label class="field-label">Año *</label>

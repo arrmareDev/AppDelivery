@@ -1,8 +1,15 @@
 <template>
-    <div class="card overflow-hidden transition-all duration-200 cursor-pointer active:scale-[0.98]"
+    <div class="card overflow-hidden transition-all duration-200 cursor-pointer active:scale-[0.98] relative"
         :class="aceptando ? 'ring-2' : 'hover:border-[color:var(--color-brand-200)]'"
-        :style="aceptando ? 'border-color: var(--color-brand-300); box-shadow: 0 0 0 2px rgba(225,68,42,0.12)' : ''"
+        :style="aceptando ? 'border-color: var(--color-brand-300); box-shadow: 0 0 0 2px rgba(250,160,0,0.18)' : ''"
         @click="$emit('verDetalle')">
+
+        <!-- Badge NUEVO — hasta que el motorizado abra el detalle una vez -->
+        <span v-if="nuevo" class="absolute top-2.5 right-2.5 z-10 text-[10px] font-black uppercase tracking-wider
+                     px-2 py-0.5 rounded-full shadow-sm"
+            style="background: var(--color-brand-400); color: #1a1200">
+            Nuevo
+        </span>
 
         <div class="p-4">
 
@@ -90,6 +97,7 @@ const props = defineProps<{
     despacho: DespachoItem
     aceptando: boolean
     deshabilitado?: boolean
+    nuevo?: boolean
 }>()
 
 defineEmits<{ verDetalle: [] }>()

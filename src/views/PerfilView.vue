@@ -96,7 +96,7 @@
                         <div>
                             <label class="field-label">Nueva contraseña</label>
                             <input v-model="passwordForm.nueva" type="password" required minlength="8"
-                                placeholder="Mínimo 6 caracteres" class="field-input" />
+                                placeholder="Mínimo 8 caracteres" class="field-input" />
                         </div>
                         <div>
                             <label class="field-label">Confirmar contraseña</label>

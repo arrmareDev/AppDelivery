@@ -129,7 +129,7 @@
                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 <PedidoCard v-for="d in despachos.disponibles" :key="d.id" :despacho="d"
                     :aceptando="aceptandoId === d.id" :deshabilitado="!despachos.puedeAceptarMas"
-                    @ver-detalle="abrirDetalle(d)" />
+                    :nuevo="despachos.esNuevo(d.id)" @ver-detalle="abrirDetalle(d)" />
             </TransitionGroup>
         </div>
 
@@ -167,7 +167,7 @@ import AlertaSonido from '../components/AlertaSonido.vue'
 import ConfirmModal from '../components/ConfirmModal.vue'
 import DetallePedidoModal from '../components/DetallePedidoModal.vue'
 import AppNav from '../components/AppNav.vue'
-import type { DespachoItem } from '../stores/despacho'
+import type { DespachoItem, DespachoActualizadoEvent } from '../stores/despacho'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -239,8 +239,8 @@ onMounted(async () => {
     loading.value = false
 
     echo.channel('motorizados')
-        .listen('.pedido.disponible', (data: any) => despachos.addDisponible(data))
-        .listen('.despacho.actualizado', (data: any) => {
+        .listen('.pedido.disponible', (data: DespachoItem) => despachos.addDisponible(data))
+        .listen('.despacho.actualizado', (data: DespachoActualizadoEvent) => {
             // Cualquier despacho que deje de estar "solicitado" (otro
             // motorizado lo aceptó, o se canceló) desaparece al instante
             // de la lista de disponibles de todos los demás.
@@ -280,6 +280,7 @@ async function executeToggleEstado() {
 const detalleModal = reactive({ show: false, target: null as DespachoItem | null })
 
 function abrirDetalle(d: DespachoItem) {
+    despachos.marcarVisto(d.id)
     detalleModal.target = d
     detalleModal.show = true
 }

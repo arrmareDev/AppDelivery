@@ -53,11 +53,46 @@ export interface PaginationMeta {
   per_page: number;
 }
 
+// Shape real de lo que transmite Central en el evento WebSocket
+// 'despacho.actualizado' (ver DespachoActualizado::broadcastWith en el
+// backend) — antes esto se tipaba como `any` en los .listen().
+export interface DespachoActualizadoEvent {
+  despacho_id: number;
+  order_id: number;
+  estado: string;
+  aceptado_at: string | null;
+  recogido_at: string | null;
+  entregado_at: string | null;
+  monto_cobrado: number | null;
+  motorizado: {
+    id: number;
+    nombre: string;
+    telefono: string;
+    lat: number | null;
+    lng: number | null;
+  } | null;
+}
+
 // Debe coincidir con MAX_DESPACHOS_SIMULTANEOS del backend (Central).
 // El backend es quien de verdad lo hace cumplir — esto es solo para
 // no dejar que la persona intente aceptar un 4to de más y se lleve
 // un error recién al final.
 export const MAX_DESPACHOS_SIMULTANEOS = 3;
+
+// ── Pedidos ya vistos (para el badge "NUEVO") ──────────────
+// Persistido en localStorage: un pedido deja de ser "nuevo" apenas el
+// motorizado abre su detalle una vez — no se re-marca como nuevo si
+// cierra y vuelve a abrir la app.
+const VISTOS_KEY = "motorizado_pedidos_vistos";
+
+function cargarVistos(): Set<number> {
+  try {
+    const raw = localStorage.getItem(VISTOS_KEY);
+    return new Set(raw ? JSON.parse(raw) : []);
+  } catch {
+    return new Set();
+  }
+}
 
 export const useDespachosStore = defineStore("despachos", () => {
   const disponibles = ref<DespachoItem[]>([]);
@@ -67,6 +102,7 @@ export const useDespachosStore = defineStore("despachos", () => {
   const loading = ref(false);
   const loadingMore = ref(false);
   const nuevoPedido = ref(false); // flag para alerta sonido
+  const vistos = ref<Set<number>>(cargarVistos());
 
   const puedeAceptarMas = computed(
     () => activos.value.length < MAX_DESPACHOS_SIMULTANEOS,
@@ -187,6 +223,23 @@ export const useDespachosStore = defineStore("despachos", () => {
     disponibles.value = disponibles.value.filter((d) => d.id !== despachoId);
   }
 
+  function esNuevo(despachoId: number): boolean {
+    return !vistos.value.has(despachoId);
+  }
+
+  function marcarVisto(despachoId: number) {
+    if (vistos.value.has(despachoId)) return;
+    // Set no dispara reactividad de Vue con solo .add() — hay que
+    // reemplazar la referencia para que los componentes que usan
+    // esNuevo() se vuelvan a evaluar.
+    const nuevo = new Set(vistos.value);
+    nuevo.add(despachoId);
+    vistos.value = nuevo;
+    try {
+      localStorage.setItem(VISTOS_KEY, JSON.stringify([...nuevo]));
+    } catch {}
+  }
+
   return {
     disponibles,
     activos,
@@ -206,5 +259,7 @@ export const useDespachosStore = defineStore("despachos", () => {
     updateEstado,
     addDisponible,
     removeDisponible,
+    esNuevo,
+    marcarVisto,
   };
 });
