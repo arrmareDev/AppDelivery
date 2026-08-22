@@ -2,22 +2,22 @@
     <div class="min-h-screen flex items-center justify-center px-4 py-8" style="background: var(--color-bg)">
         <div class="w-full max-w-sm sm:max-w-md">
 
+            <!-- Logo / título -->
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center
+                            justify-center mx-auto mb-4 overflow-hidden"
+                    style="background: #0a0a0a; box-shadow: 0 12px 28px -10px rgba(143,92,0,0.5)">
+                    <img :src="logoUrl" alt="VoyYa" class="w-full h-full object-cover" />
+                </div>
+                <h1 class="font-black text-2xl sm:text-3xl m-0" style="color: var(--color-ink)">
+                    VoyYa
+                </h1>
+                <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Acceso para motorizados</p>
+            </div>
+
             <!-- Form -->
             <form @submit.prevent="handleLogin" class="card p-6 sm:p-8 flex flex-col gap-4">
 
-                <!-- Logo / título -->
-                <div class="text-center mb-8">
-                    <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl flex items-center
-                            justify-center mx-auto mb-4 overflow-hidden"
-                        style="background: #0a0a0a; box-shadow: 0 12px 28px -10px rgba(143,92,0,0.5)">
-                        <img src="/logo.png" alt="VoyYa" class="w-full h-full object-cover" />
-                    </div>
-                    <h1 class="font-black text-2xl sm:text-3xl m-0" style="color: var(--color-ink)">
-                        VoyYa
-                    </h1>
-                    <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Acceso para motorizados</p>
-                </div>
-                
                 <div>
                     <label class="field-label">Correo electrónico</label>
                     <input v-model="email" type="email" required placeholder="tu@correo.com" class="field-input" />
@@ -27,7 +27,7 @@
                     <div class="flex items-center justify-between mb-1.5">
                         <label class="field-label m-0">Contraseña</label>
                         <RouterLink to="/forgot-password" class="text-[11px] font-bold no-underline hover:underline"
-                            style="color: var(--color-brand-500)">
+                            style="color: var(--color-brand-600)">
                             ¿Olvidaste tu contraseña?
                         </RouterLink>
                     </div>
@@ -64,7 +64,7 @@
             <p class="text-center text-sm mt-6" style="color: var(--color-ink-faint)">
                 ¿No tienes cuenta?
                 <RouterLink to="/register" class="font-bold no-underline hover:underline"
-                    style="color: var(--color-brand-500)">
+                    style="color: var(--color-brand-600)">
                     Regístrate aquí
                 </RouterLink>
             </p>
@@ -77,6 +77,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ExclamationTriangleIcon, EyeIcon, EyeSlashIcon } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '../stores/auth'
+import logoUrl from '../assets/logo.png'
 
 const router = useRouter()
 const auth = useAuthStore()

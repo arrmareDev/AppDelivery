@@ -4,7 +4,7 @@
         <div class="px-5 pt-6 pb-5 flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 overflow-hidden"
                 style="background: #0a0a0a">
-                <img src="/logo.png" alt="VoyYa" class="w-full h-full object-cover" />
+                <img :src="logoUrl" alt="VoyYa" class="w-full h-full object-cover" />
             </div>
             <div class="min-w-0">
                 <p class="font-black text-[14px] leading-tight m-0 truncate" style="color: var(--color-ink)">
@@ -114,6 +114,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useAuthStore } from '../stores/auth'
 import { useResponsive } from '../composables/useResponsive'
+import logoUrl from '../assets/logo.png'
 
 defineProps<{ active: 'home' | 'historial' | 'estadisticas' | 'perfil' | '' }>()
 defineEmits<{ navigate: [path: string]; logout: [] }>()
