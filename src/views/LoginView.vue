@@ -14,7 +14,6 @@
                     <h1 class="font-black text-2xl sm:text-3xl m-0" style="color: var(--color-ink)">
                         VoyYa
                     </h1>
-                    <p class="text-sm mt-1" style="color: var(--color-ink-faint)">Acceso para motorizados</p>
                 </div>
                 <div>
                     <label class="field-label">Correo electrónico</label>
